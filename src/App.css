@@ -1,0 +1,203 @@
+.ant-layout{
+  min-height: 100vh;
+}
+
+.logo{
+  height: 32px;
+  margin: 16px;
+  background: rgba(255,255,255,0.3);
+}
+
+.trigger{
+  padding: 0.24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.error{
+  color:red
+}
+
+.trigger:hover{
+  color: #1830ff;
+}
+
+
+.ant-layout-sider{
+  flex: 0 0 250px !important;
+  max-width: 250px !important;
+  min-width: 250px !important;
+  width: 250px !important;
+}
+.ant-layout-sider-collapsed{
+  flex: 0 0 80px !important;
+  max-width: 80px !important;
+  min-width: 80px !important;
+  width: 80px !important;
+}
+
+.sm-logo{
+  display: none;
+  transition: .3s;
+}
+.ant-layout-sider-collapsed .sm-logo{
+  transition: .3s;
+  display: block;
+}
+
+.ant-layout-header h5{
+  line-height: 30px;
+}
+.ant-layout-header p{
+  line-height: 30px;
+}
+
+.ant-layout-header div .badge{
+  top:15%;
+  right: -6px;
+  background-color: #23f0fe;
+}
+
+
+.lg-logo{
+  display: block;
+  transition: .3s;
+}
+.ant-layout-sider-collapsed .lg-logo{
+  display: none;
+  transition: .3s;
+}
+
+.logo{
+  background-color: #39a9f9 !important;
+  margin: 0;
+  height: 70px;
+}
+
+.ant-layout{
+  height: 100vh;
+}
+
+.ant-layout-sider{
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+
+
+.ant-layout-sider::-webkit-scrollbar{
+  width: 0vh;
+}
+
+main::-webkit-scrollbar{
+ width: 0vh;
+}
+
+
+/* Form Css */
+.form-container {  
+  display: flex;  
+  flex-direction: column;  
+  align-items: center;  
+  padding: 20px;  
+}  
+
+.form-group {  
+  display: flex;  
+  align-items: center;  
+  margin: 5px 0;  
+  width: 100%;  
+  justify-content: center;  
+}  
+
+.form-group label {  
+  margin-right: 15px;  
+  text-align: right;  
+  width: 100px;  
+}  
+
+.form-control {  
+  padding: 10px;  
+  margin-left: 10px;  
+}  
+
+.form-control2 {  
+  padding: 10px;  
+  /* margin-left: 10px;   */
+}  
+
+.error {  
+  color: red;  
+  margin-left: 10px;  
+  font-size: 12px;  
+}
+
+
+.circle {  
+  display: inline-block;  
+  width: 12px;        
+  height: 12px;       
+  border-radius: 50%; 
+  margin-right: 8px;  
+}  
+
+
+.green {  
+  background-color: green; 
+  margin-bottom: 10px; 
+}  
+
+.red {  
+  background-color: red; 
+  margin-bottom: 10px; 
+}  
+
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-table-wrapper .ant-table-thead >tr>th:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before, :where(.css-dev-only-do-not-override-1htoz2s).ant-table-wrapper .ant-table-thead >tr>td:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before {
+  background-color: #a4acb4 !important;
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-radio-wrapper .ant-radio-input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 1;
+}
+
+
+/* General table styling */
+.ant-table-wrapper{
+  width: 100% !important;
+  overflow-X:'scroll' !important
+}
+ 
+/* Header styling */
+
+ 
+.ant-table-thead > tr > th {
+  background-color: #a4acb4 !important; 
+  color: black !important;
+  padding: 0 0 0 0 !important;
+  height: 50px !important;
+  min-width: 90px !important;
+  border: 5px solid #a4acb4 !important;
+  /* text-align: center !important; */
+} 
+.ant-table-tbody > tr > td {
+  color: #000; 
+  padding: 0 0 5px 0 !important;
+  min-width: 90px !important;
+  /* border: 1px solid #e2e6ea ; */
+  /* text-align: center !important; */
+}
+
+.ant-table-row:nth-child(odd) {
+  background-color: #ffffff; /* Light blue on hover */
+}
+
+.ant-table .ant-table-thead > tr > th:nth-child(1) {  
+  text-align: center; 
+}
+
