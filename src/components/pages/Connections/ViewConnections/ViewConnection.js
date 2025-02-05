@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';  
-import { Input, Table, Button, Radio, message, Modal } from 'antd';  
+import { Input, Table, Button, Radio, message, Modal, Select } from 'antd';  
 import CustomModel from './CustomModel';  
 import { Link, useNavigate } from 'react-router-dom';  
 import {useFormik} from 'formik'
@@ -8,10 +8,12 @@ import axios from 'axios';
 import { toast,ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteConnectionSlice, getConnectionSlice, renameConnectionSlice } from '../../../features/Connections/connectionSlice';
+import { Option } from 'antd/es/mentions';
 
 const ViewConnection = () => {  
 
     const [searchText, setSearchText] = useState('');  
+     const [allProjects, setAllProjects] = useState([]);
     const [messageApi, contextHolder] = message.useMessage();
     const [selectedKey, setSelectedKey] = useState(null); 
     const [selectedRecord,setSelectedRecord] = useState(null);  
@@ -27,6 +29,7 @@ const ViewConnection = () => {
 
     const dispatch = useDispatch();
     const {connections} = useSelector((state)=>state.connection)
+    const projects = useSelector(state => state.project.projects);
 
     const schema = yup.object({
         connection_name : yup.string().required("Connection Name Required")
@@ -95,6 +98,11 @@ const ViewConnection = () => {
             ),   
         } 
     ];  
+
+     useEffect(()=>{
+            setAllProjects(projects);
+        },[projects])
+     
 
     const conns = []
 
@@ -209,7 +217,7 @@ const ViewConnection = () => {
     }
 
     return (  
-        <div className="w-100">  
+        <div>  
         <ToastContainer
                   position='top-center'
                   autoClose={1000}
@@ -233,7 +241,7 @@ const ViewConnection = () => {
                             <label style={{ cursor: 'pointer', fontSize: "20px" }}></label>  
                         </Link>  
                     </div>  
-                    {/* <div className="form-group">  
+                    <div className="form-group">  
                         <Select  
                             name="project_id"
                             className='w-50 h-100'
@@ -241,13 +249,13 @@ const ViewConnection = () => {
                             value={formik.values.project_id}  
                             onChange={formik.handleChange('project_id')}  
                         >  
-                            <Option value="">Select Project</Option>    
+                            <Option value="" default>Select Project</Option>    
                             {allProjects && allProjects.map((option) => (  
                                 <Option key={option?.project_id} >{option?.project_name}</Option>  
                             ))}  
                         </Select>  
                         <div className="error">{formik.touched.project_id && formik.errors.project_id}</div>  
-                    </div>    */}
+                    </div>   
 
                     <div className="d-flex justify-content-between align-items-between mb-2 gap-2">
 
@@ -266,16 +274,17 @@ const ViewConnection = () => {
                             </Button>  
                         </div>  
 
-
                         <Input  
                             placeholder="Search by Name, Type, Username, or Host"  
                             value={searchText}  
                             onChange={(e) => setSearchText(e.target.value)}  
-                            style={{ maxWidth: 300 }}   
+                            // style={{ maxWidth: 300, width:"200px" }}   
                             className="search-input" // optional class for further styling if needed  
                             />  
+
                     </div>
         </div> 
+        {console.log(filteredData)}
             <Table  
                 columns={columns}  
                 dataSource={filteredData} // Use the filtered data  

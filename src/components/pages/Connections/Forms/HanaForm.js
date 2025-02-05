@@ -78,7 +78,6 @@ const HanaForm = () => {
     }, [projects]);  
 
     useEffect(() => {  
-        fetchProjects();  
         fetchConnection();  
     }, [getConnectionName, getProjectId]);  
 
@@ -102,10 +101,7 @@ const HanaForm = () => {
         };   
         dispatch(singleGetConnectionSlice(singleConnectionData));   
     };  
-
-    const fetchProjects = async () => {  
-        dispatch(getProjectsSlice());  
-    };  
+ 
 
     const saveConnection = async (values) => {  
         dispatch(saveConnectionSlice({...values,connection_type:"Hana"}))

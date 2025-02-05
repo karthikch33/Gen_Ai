@@ -165,7 +165,7 @@ const MainScreen = () =>
   }
 
   return (  
-    <>  
+    <div>  
      <ToastContainer
           position='top-center'
           autoClose={1000}
@@ -179,7 +179,7 @@ const MainScreen = () =>
           theme='light'
           />
       <Layout hasSider>  
-        <Sider trigger={null} collapsible collapsed={collapsed}>  
+        <Sider trigger={null} collapsible collapsed={collapsed} className='main-part'>  
           <div className="fixed logo d-flex align-items-center justify-content-center">  
             <h3 className='text-center text-white fs-5 mb-0 '>  
               <span className='sm-logo' onClick={returnHome} style={{cursor:'pointer'}}>AI</span>  
@@ -222,15 +222,17 @@ const MainScreen = () =>
             style={{  
               margin: '24px 16px',  
               padding: 24,  
-              minHeight: 280,  
+              // minHeight: 280,
+              overflowY:"scroll",  
+              // border:"10px solid red",
               background: colorBgContainer,  
             }}  
           >  
-            <Outlet />  
+            <Outlet/>  
           </Content>  
         </Layout>  
       </Layout>  
-    </>     
+    </div>     
   )    
 };  
 

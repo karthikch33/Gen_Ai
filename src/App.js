@@ -13,9 +13,18 @@ import LandingPage from './components/pages/LandingPage';
 import ManageProjects from './components/pages/Project/ManageProjects';
 import ViewSapTables from './components/pages/Connections/ViewConnections/ViewSapTables';
 import ViewHanaTables from './components/pages/Connections/ViewConnections/ViewHanaTables';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { getProjectsSlice } from './components/features/Project/projectSlice';
 
 
 function App() {
+      
+      const dispatch = useDispatch();
+      useEffect(()=>{
+        dispatch(getProjectsSlice())
+      }); 
+  
   return (
     <>
         <BrowserRouter>

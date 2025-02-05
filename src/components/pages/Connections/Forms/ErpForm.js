@@ -135,10 +135,7 @@ const ErpForm = () => {
     };  
 
      // Fetch all projects  
-     const fetchProjects = async () => {  
-        dispatch(getProjectsSlice())
-    };  
-
+    
 
     useEffect(()=>{
             if (getConnectionName && singleConnection) {  
@@ -161,12 +158,11 @@ const ErpForm = () => {
     },[projects])
  
     useEffect(() => {  
-        fetchProjects();  
         fetchConnection(); 
     }, [getConnectionName, getProjectId]);  
 
     return (  
-        <>
+        <div>
         {contextHolder}
         <ToastContainer
           position='top-center'
@@ -276,7 +272,7 @@ const ErpForm = () => {
                 </form>  
             </div>  
         </div>  
-        </>
+        </div>
     );  
 }  
    

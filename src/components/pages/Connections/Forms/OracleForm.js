@@ -75,7 +75,6 @@ const OracleForm = () => {
       },[projects])
 
     useEffect(() => {  
-            fetchProjects();  
             fetchConnection(); // Fetch connection only if we're in edit mode  
         }, [getConnectionName, getProjectId]);  
 
@@ -108,10 +107,6 @@ const OracleForm = () => {
         dispatch(singleGetConnectionSlice(singleConnectionData));   
     };     
 
-    // Fetch all projects  
-    const fetchProjects = async () => {  
-        dispatch(getProjectsSlice())
-    };  
     // Save connection  
         const saveConnection = async (values) => {  
             dispatch(saveConnectionSlice(values));

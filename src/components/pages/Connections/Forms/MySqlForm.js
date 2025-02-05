@@ -82,7 +82,6 @@ const MySqlForm = () => {
         },[singleConnection])
         
         useEffect(() => {  
-            fetchProjects();  
             fetchConnection(); // Fetch connection only if we're in edit mode  
         }, [getConnectionName, getProjectId]); 
     
@@ -106,11 +105,6 @@ const MySqlForm = () => {
      const updateConnection = async (values) => {  
                dispatch(updateConnectionSlice(values)); 
             };  
-
-
-    const fetchProjects = async () => {  
-            dispatch(getProjectsSlice())
-        };
 
     const fetchConnection = async () => { 
         const singleConnectionData = {
