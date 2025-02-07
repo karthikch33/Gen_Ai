@@ -9,6 +9,7 @@ import { SiMysql } from "react-icons/si";
 import '@fortawesome/fontawesome-free/css/all.min.css'; 
 import { MdInsertDriveFile   } from "react-icons/md";
 import { TbPlugConnected } from "react-icons/tb"
+import { VscGitPullRequestCreate } from "react-icons/vsc";
 import { BsFillEyeFill   } from "react-icons/bs";
 import { TbReportAnalytics } from "react-icons/tb";
 import { FaDiagramProject } from "react-icons/fa6";
@@ -60,7 +61,30 @@ const items = [
         {  
           key: '/connections/flatfile',  
           icon: <MdInsertDriveFile  className='fs-4' />,  
-          label: 'Files'  
+          label: 'Files',
+          children:[
+            {
+              key: '/connections/excel',  
+              icon: <SiCrehana  className='fs-4'/>,  
+              label: 'Excel',
+            },
+            {
+              key: '/connections/txt',  
+              icon: <SiCrehana  className='fs-4'/>,  
+              label: 'TXT',
+            },
+            {
+              key: '/connections/csv',  
+              icon: <SiCrehana  className='fs-4'/>,  
+              label: 'CSV',
+            },
+            {
+              key: '/connections/xml',  
+              icon: <SiCrehana  className='fs-4'/>,  
+              label: 'XML',
+            },
+            
+          ]
         },    
         {  
           key:'/database',
@@ -92,9 +116,9 @@ const items = [
       }        
     ]},  
   {  
-    key: '/bussinessrules',  
+    key: '/bussinessrules/manage',  
     icon: <i className={'fas fa-scale-balanced'}></i> ,  
-    label: 'Bussiness Rules'  
+    label: 'Bussiness Rules',
   },    
   {
     key: '/reports',

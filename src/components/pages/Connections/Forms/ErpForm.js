@@ -179,7 +179,7 @@ const ErpForm = () => {
         <div className="d-flex justify-content-center" >  
             <div className="bg-light border rounded shadow p-2" >  
                 <h3 className="text-center"> SAP Connection</h3>  
-                <form onSubmit={formik.handleSubmit} className="form-container">   
+                <form onSubmit={formik.handleSubmit} className="form-container" style={{width:"400px"}}>   
                     <div className="form-group">  
                         <label htmlFor="project_id">Project Name</label>  
                         <select  

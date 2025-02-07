@@ -201,3 +201,6 @@ main::-webkit-scrollbar{
   text-align: center; 
 }
 
+.form-control-addons::placeholder{
+  color:rgb(216, 216, 216) !important;
+}

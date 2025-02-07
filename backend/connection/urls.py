@@ -24,6 +24,22 @@ urlpatterns = [
     path('api/Cget/',views.ConnectionGet,name="Cget"),
     path('api/Cdelete/<int:p_id>/<str:c_name>/',views.connectionDelete,name="Cdelete"),
     path('api/CgetSingle/<int:p_id>/<str:c_name>/',views.ConnectionGetSingle,name="CgetSingle"),
-    path('api/Crename/<str:re_val>/<int:p_id>/<str:c_name>/',views.connectionRename,name="Crename")
+    path('api/Crename/<str:re_val>/<int:p_id>/<str:c_name>/',views.connectionRename,name="Crename"),
+
+    path('xls/',views.xls_read,name="xls_read"),
+    path('api/ObjGet/<int:oid>/',views.objects_get,name="objects_get"),
+    path('api/ObjCreate/',views.objects_create,name="objects_create"),
+    path('api/ObjUpdate/<int:oid>/',views.objects_update,name="objects_update"),
+    path('api/ObjDelete/<int:oid>/',views.objects_delete,name="objects_delete"),
+ 
+ 
+    #Rules Page API's
+    path('api/PdataObject/<int:pid>/',views.project_dataObject,name="project_dataObject"),
+    path('api/Osegements/<int:pid>/<int:oid>/',views.DataObject_Segements,name="DataObject_Segements"),
+    path('api/Sfields/<int:pid>/<int:oid>/<int:sid>/',views.Segements_Fields,name="Segements_Fields"),
+ 
+ 
+    path('xls/',views.xls_read,name="xls_read"),
+    path('tableDelete/',views.tableDelete,name="tableDelete"),
     
 ]

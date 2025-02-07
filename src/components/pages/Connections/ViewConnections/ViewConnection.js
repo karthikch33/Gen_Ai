@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';  
-import { Input, Table, Button, Radio, message, Modal, Select } from 'antd';  
+import {  Table, Button, Radio, message, Modal, Input, Select } from 'antd';  
 import CustomModel from './CustomModel';  
 import { Link, useNavigate } from 'react-router-dom';  
 import {useFormik} from 'formik'
@@ -9,14 +9,17 @@ import { toast,ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteConnectionSlice, getConnectionSlice, renameConnectionSlice } from '../../../features/Connections/connectionSlice';
 import { Option } from 'antd/es/mentions';
+import Search from 'antd/es/transfer/search';
 
 const ViewConnection = () => {  
 
     const [searchText, setSearchText] = useState('');  
-     const [allProjects, setAllProjects] = useState([]);
+    const [allProjects, setAllProjects] = useState([]);
     const [messageApi, contextHolder] = message.useMessage();
     const [selectedKey, setSelectedKey] = useState(null); 
     const [selectedRecord,setSelectedRecord] = useState(null);  
+    const [selectOption,setSelectOption] = useState();
+    const [alertActive,setAlertActive] = useState(true);
     const [open, setOpen] = useState(false);  
     const [open2, setOpen2] = useState(false);  
     const navigate = useNavigate();
@@ -38,7 +41,8 @@ const ViewConnection = () => {
 
     const formik = useFormik({
         initialValues:{
-            connection_name:""
+            connection_name:"",
+            project_id_select:""
         },
         validationSchema:schema,
         onSubmit:(values)=>{
@@ -133,26 +137,55 @@ const ViewConnection = () => {
     }));  
     
     
-    
-    console.log(conns);
+
     // Filter data based on search text  
-    const filteredData = connectionsIterate?.filter(item => (  
+    const filteredData = connectionsIterate?.filter(item => (
         item.connection_type.toLowerCase().includes(searchText.toLowerCase()) ||
         item.username.toLowerCase().includes(searchText.toLowerCase()) ||  
         item.host.toLowerCase().includes(searchText.toLowerCase())  ||  
-        item?.connection_name.toLowerCase().includes(searchText.toLowerCase())   
-    ));  
+        item?.connection_name.toLowerCase().includes(searchText.toLowerCase())
+    ))
 
+    const filterSelectOptions = filteredData?.filter(item => {  
+        if (selectOption?.target?.value){  
+            const selectedValue = Number(selectOption.target.value);  
+            return item.project_id === selectedValue;  
+        } else {  
+            return false;
+        }  
+    });
+    
+    const handleProjectSelect = (e)=>{
+        if(e.target.value !== ""){
+            setSelectOption(e);
+        }
+    }
         
     const handleEditNavigation = ()=>{
-        console.log(selectedRecord.connection_name)
-        selectedRecord === null ? messageApi.info('Please Select a Connection') : 
-        navigate(`/connections/${selectedRecord?.connection_type}/${selectedRecord.connection_name}/${selectedRecord?.project_id}`);
+        if(selectedRecord === null)
+        {
+            if(alertActive){
+            messageApi.info('Please Select a Connection')
+            setAlertActive(false);
+            setTimeout(()=>setAlertActive(true),3000);
+            }
+        }
+        else{
+            navigate(`/connections/${selectedRecord?.connection_type}/${selectedRecord.connection_name}/${selectedRecord?.project_id}`);
+        }
     }   
     
     const showModal = ()=>{
-        selectedRecord === null ? messageApi.info('Please Select a Connection') : 
-        setOpen(true);
+        if(selectedRecord === null){
+            if(alertActive){
+                messageApi.info('Please Select a Connection')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+        }
+       else{
+           setOpen(true);
+       }
     }
     
     const hideModal = () => {  
@@ -160,17 +193,27 @@ const ViewConnection = () => {
     }; 
 
     const handleDelete = ()=>{
-        dispatch(deleteConnectionSlice(selectedRecord)) 
-        setTimeout(()=>{
-            dispatch(getConnectionSlice())
-        },1000)
-        hideModal(false);
-    }  
-
+        dispatch(deleteConnectionSlice(selectedRecord))
+        .then((response)=>{
+            toast.success(`${response?.payload.data} has been deleted`);
+        })
+        .catch((error)=>{
+            toast.error("Deletion Failed");
+            })
+            setTimeout(()=>{
+                dispatch(getConnectionSlice())
+            },1000)
+            hideModal(false);
+        } 
     
     const showModal2 = () => {  
-        if(selectedRecord === null)
-        messageApi.info('Please Select a Record')
+        if(selectedRecord === null){
+            if(alertActive){
+                messageApi.info('Please Select a Connection')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+        }
         else{
         formik.values.connection_name = selectedRecord?.connection_name;
         setOpen2(true);
@@ -218,76 +261,59 @@ const ViewConnection = () => {
 
     return (  
         <div>  
-        <ToastContainer
-                  position='top-center'
-                  autoClose={1000}
-                  hideProgressBar={true}
-                  closeOnClick
-                  newestOnTop={true}
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme='light'
-                  />
-        {contextHolder}    
-            <div className="d-flex justify-content-between align-items-between mb-2">  
-                    <div className="d-flex align-items-center">  
-                        <Link>  
-                            <label style={{ cursor: 'pointer', fontSize: "20px" }}>Connections</label>  
-                        </Link>  
-                        {/* <span style={{ margin: '0 5px' }}>/</span>   */}
-                        <Link>  
-                            <label style={{ cursor: 'pointer', fontSize: "20px" }}></label>  
-                        </Link>  
-                    </div>  
-                    <div className="form-group">  
-                        <Select  
-                            name="project_id"
-                            className='w-50 h-100'
-                            style={{maxHeight:"35px",marginTop:"-10px"}}
-                            value={formik.values.project_id}  
-                            onChange={formik.handleChange('project_id')}  
-                        >  
-                            <Option value="" default>Select Project</Option>    
-                            {allProjects && allProjects.map((option) => (  
-                                <Option key={option?.project_id} >{option?.project_name}</Option>  
-                            ))}  
-                        </Select>  
-                        <div className="error">{formik.touched.project_id && formik.errors.project_id}</div>  
-                    </div>   
+            <ToastContainer
+                    position='top-center'
+                    autoClose={1000}
+                    hideProgressBar={true}
+                    closeOnClick
+                    newestOnTop={true}
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme='light'
+                    />
+                     {contextHolder}
+            <div className="container-fluid">  
+                <div className="d-flex flex-row justify-content-around mb-3" style={{ overflowX: "auto", maxWidth: "100%" }}>  
+                    <label style={{ color: "skyblue", fontSize: "20px" }}>Connections</label>  
+                    <select  
+                        name="project_id"   
+                        className='form-select'   
+                        style={{ maxWidth: "200px", padding: "3px" }}   
+                        onChange={handleProjectSelect}   
+                    >  
+                        <option value="" style={{ textAlign: "center" }}>Select Project</option>   
+                        {allProjects && allProjects.map((option) => (  
+                            <option key={option?.project_id} value={option?.project_id} style={{ textAlign: "center" }}>{option?.project_name}</option>  
+                        ))}  
+                    </select>  
+                    <Button className="mb-2 mb-md-0 me-md-2" onClick={handleEditNavigation} style={{ fontSize: '14px' }}>  
+                        Edit  
+                    </Button>  
+                    <Button className="mb-2 mb-md-0 me-md-2" onClick={showModal} style={{ fontSize: '14px' }}>  
+                        Delete  
+                    </Button>  
+                    <Button className="mb-2 mb-md-0 me-md-2" onClick={showModal2} style={{ fontSize: '14px' }}>  
+                        Rename  
+                    </Button>  
+                    <Button onClick={handleValidateConnection} style={{ fontSize: '14px' }}>  
+                        Validate Connection  
+                    </Button>  
+                    <input  
+                        placeholder="Search by Name, Type, Username, or Host"  
+                        value={searchText}  
+                        className='form-control form-control-addons'   
+                        style={{ maxWidth: "200px", padding: "2px" }}   
+                        onChange={(e) => setSearchText(e.target.value)}  
+                    />  
+                </div>  
+            </div>
 
-                    <div className="d-flex justify-content-between align-items-between mb-2 gap-2">
 
-                        <div className="d-flex gap-2">  
-                            <Button onClick={handleEditNavigation} style={{ fontSize: '14px' }}>  
-                                Edit  
-                            </Button>  
-                            <Button onClick={showModal} style={{ fontSize: '14px' }}>  
-                                Delete  
-                            </Button>  
-                            <Button onClick={showModal2} style={{ fontSize: '14px' }}>  
-                                Rename  
-                            </Button>  
-                            <Button onClick={handleValidateConnection} style={{ fontSize: '14px' }}>  
-                                Validate Connection  
-                            </Button>  
-                        </div>  
-
-                        <Input  
-                            placeholder="Search by Name, Type, Username, or Host"  
-                            value={searchText}  
-                            onChange={(e) => setSearchText(e.target.value)}  
-                            // style={{ maxWidth: 300, width:"200px" }}   
-                            className="search-input" // optional class for further styling if needed  
-                            />  
-
-                    </div>
-        </div> 
-        {console.log(filteredData)}
             <Table  
                 columns={columns}  
-                dataSource={filteredData} // Use the filtered data  
+                dataSource={filterSelectOptions} // Use the filtered data  
                 pagination={{  
                     pageSize: 10,  
                 }}  
@@ -326,7 +352,6 @@ const ViewConnection = () => {
                     </form>  
             </Modal>
         </div>  
-    );  
-}  
-
+    )
+}
 export default ViewConnection;

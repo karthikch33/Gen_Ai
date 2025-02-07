@@ -1552,3 +1552,37 @@ NW RFC Library: Kernel variant, Release 750 Patch Level 7, Compiled on Jan 20 20
 2025-02-04 04:09:04.946589 [14632] >> Error entry
 	[Handle: 1681909412688	ConvID: 51516815	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: BALAJI	Mandant: 100	Language: 	Codepage: 4103]
 	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+
+**** Log file opened at 2025-02-05 20:15:57.460714 UTC+05:30 (India Standard Time), Encoding UTF-8
+NW RFC Library: Kernel variant, Release 750 Patch Level 7, Compiled on Jan 20 2021 04:58:17
+ CPIC library: 753.2020.10.14 version 3, NI library: 40, Kernel Release: 753 Patch Level 728
+ Current working directory: C:\React\Gen_Ai\backend, Program: python
+ Hardware: PC with Windows NT 8x AMD64 Level 6 (Mod 142 Step 12), Operating_system: Windows NT 10.0
+ Hostname: YH1101460LT, IP address: 10.6.103.41, IPv6 address: fe80::b029:3c7f:ca0d:3f19
+
+2025-02-05 20:15:57.461735 [19696] >> Error entry
+	[Handle: 2441853558336	ConvID: 95518660	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: MUTHURAJAM	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+2025-02-05 20:17:37.751028 [12704] >> Error entry
+	[Handle: 2441814830736	ConvID: 95649036	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: LSADJF	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+
+**** Log file opened at 2025-02-06 14:57:35.210558 UTC+05:30 (India Standard Time), Encoding UTF-8
+NW RFC Library: Kernel variant, Release 750 Patch Level 7, Compiled on Jan 20 2021 04:58:17
+ CPIC library: 753.2020.10.14 version 3, NI library: 40, Kernel Release: 753 Patch Level 728
+ Current working directory: C:\React\Gen_Ai\backend, Program: python
+ Hardware: PC with Windows NT 8x AMD64 Level 6 (Mod 142 Step 12), Operating_system: Windows NT 10.0
+ Hostname: YH1101460LT, IP address: 10.6.103.41, IPv6 address: fe80::b029:3c7f:ca0d:3f19
+
+2025-02-06 14:57:35.211535 [07708] >> Error entry
+	[Handle: 2723147426912	ConvID: 62575437	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: ADITYAC	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+2025-02-06 14:57:59.928797 [07708] >> Error entry
+	[Handle: 2723147426912	ConvID: 62613212	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: ADIT	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+2025-02-06 14:58:02.287498 [07708] >> Error entry
+	[Handle: 2723147426912	ConvID: 62621262	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: ADIT	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)
+2025-02-06 14:58:28.298284 [07708] >> Error entry
+	[Handle: 2723147426912	ConvID: 62664581	Target: 34.194.191.113	SysID: S3X	SysNr: 01	User: ADITYAC	Mandant: 100	Language: 	Codepage: 4103]
+	RfcABAPMessageException: Key: , Code: RFC_ABAP_MESSAGE, Message: Name or password is incorrect (repeat logon)

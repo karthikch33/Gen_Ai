@@ -1,7 +1,6 @@
 import './App.css';
 import {BrowserRouter,Routes,Route} from 'react-router-dom'
 import FlatFile from './components/pages/Connections/FlatFile/flatFile';
-import Layouter from './components/pages/WorkSpace/SideBar/Layouter';
 import CreateProject from './components/pages/Project/CreateProject';
 import MainScreen from './components/pages/MainScreen/MainScreen';
 import MySqlForm from './components/pages/Connections/Forms/MySqlForm';
@@ -16,6 +15,8 @@ import ViewHanaTables from './components/pages/Connections/ViewConnections/ViewH
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getProjectsSlice } from './components/features/Project/projectSlice';
+import CreateBussinessRules from './components/pages/Bussiness Rules/createBussinessRules';
+import ManageBussinessRules from './components/pages/Bussiness Rules/manageBussinessRules';
 
 
 function App() {
@@ -50,7 +51,9 @@ function App() {
               <Route path='erp/:id/:project_id' element={<ErpForm/>}/>
               <Route path='oracle' element={<OracleForm/>}/>
               <Route path='oracle/:id/:project_id' element={<OracleForm/>}/>
-              <Route path='flatfile' element={<FlatFile/>} />
+              <Route path='flatfile/excel' element={<FlatFile/>} />
+              <Route path='flatfile/txt' element={<FlatFile/>} />
+              <Route path='flatfile/csv' element={<FlatFile/>} />
               <Route path='view-connections' element={<ViewConnection/>} />
               <Route path='view-tables' element={<ViewSapTables/>} />
               <Route path='view-tables/:id/:conn_name' element={<ViewHanaTables/>} />
@@ -65,6 +68,14 @@ function App() {
                 <Route path='preload' element={''}/>
                 <Route path='load' element={''}/>
                 <Route path='reconsile' element={''}/>
+            </Route>
+
+            <Route path='/bussinessrules' element={<MainScreen/>}>
+                  <Route path='create' element={<CreateBussinessRules/>}/>
+                  <Route path='create/:project_id' element={<CreateBussinessRules/>}/>
+                  <Route path='reupload' element={<CreateBussinessRules/>}/>
+                  <Route path='reupload/:project_id' element={<CreateBussinessRules/>}/>
+                  <Route path='manage' element={<ManageBussinessRules/>}/>
             </Route>
             
           </Routes>

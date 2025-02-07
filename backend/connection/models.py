@@ -50,3 +50,94 @@ class Connection(models.Model):
 
     def __str__(self):
         return self.connection_name    
+
+
+
+class objects(models.Model):
+    obj_id = models.AutoField(primary_key=True)
+    obj_name = models.CharField(
+        max_length=255,
+        blank = True,
+        null=True
+    )
+    project_id = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='objects_project'  # Helpful for reverse lookups
+    )
+    template_name = models.CharField(max_length=255, blank=True, null=True)
+ 
+    class Meta:
+        unique_together = ('project_id', 'obj_name')
+ 
+    def __str__ (self):
+        return f"{self.obj_id}{self.obj_name}"
+   
+ 
+ 
+ 
+ 
+class segments(models.Model):
+    segment_id = models.AutoField(primary_key=True)
+    project_id = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='segement_projid'  # Helpful for reverse lookups
+    )
+    obj_id = models.ForeignKey(
+        objects,
+        on_delete=models.CASCADE,
+        related_name='segement_objid'  # Helpful for reverse lookups
+    )
+    segement_name = models.CharField(max_length=255, blank=True, null=True)  
+    table_name = models.CharField(max_length=255, blank=True, null=True)
+ 
+    def __str__ (self):
+        return f"{self.segment_id}{self.segement_name}"
+ 
+ 
+class fields(models.Model):
+    field_id = models.AutoField(primary_key=True)
+    project_id = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='fields_projid'  # Helpful for reverse lookups
+    )
+    obj_id = models.ForeignKey(
+        objects,
+        on_delete=models.CASCADE,
+        related_name='fields_objid'  # Helpful for reverse lookups
+    )
+    segement_id = models.ForeignKey(
+        segments,
+        on_delete=models.CASCADE,
+        related_name='fields_segementid'  # Helpful for reverse lookups
+    )
+    fields = models.CharField(max_length=255, blank=True, null=True)  
+    description = models.CharField(max_length=255, blank=True, null=True)
+    isMandatory = models.CharField(max_length=255, blank=True, null=True)
+ 
+    def __str__ (self):
+        return f"{self.field_id}{self.fields}"
+   
+ 
+ 
+ 
+class Rule(models.Model):
+    Rule_id = models.AutoField(primary_key=True)
+    version = models.IntegerField(null=False,blank=False,default=1)
+    Source_Table = models.CharField(max_length=255,blank=True, null=True)
+    Source_Field_Name = models.CharField(max_length=255,blank=True, null=True)
+    Data_Mapping_Rules = models.CharField(max_length=255,blank=True, null=True)
+    Target_SAP_Table = models.CharField(max_length=255,blank=True, null=True)
+    Target_SAP_Field = models.CharField(max_length=255,blank=True, null=True)
+    Text_Description = models.CharField(max_length=255,blank=True, null=True)
+    Lookup_Table = models.CharField(max_length=255,blank=True, null=True)
+    Look_Up_Required = models.BooleanField(default=False)
+    Last_Updated_By = models.CharField(max_length=255,blank=True, null=True)
+    Last_Updated_On = models.DateTimeField(auto_now_add=True)
+    Rule_Status = models.CharField(max_length=255,blank=True, null=True)
+    Check_Box = models.CharField(max_length=255,blank=True, null=True)
+ 
+    def __str__ (self):
+        return f"{self.Rule_id}"

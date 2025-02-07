@@ -7,10 +7,15 @@ from rest_framework import status
 from hdbcli import dbapi
 import sqlite3
 from django.db import connections, transaction
-from .serlializers import ProjectSerializer,ConnectionSerializer
+from .serlializers import *
 from .models import Project,Connection
 import json
 from django.core.serializers import serialize
+import pandas as pd
+import re,string
+from django.db import connection
+
+
 
 def home(request):
     return HttpResponse("home Page")
@@ -711,3 +716,531 @@ def connectionRename(request,re_val,p_id,c_name):
     
     
         
+
+
+# @api_view(['GET'])  # This function is for dynamically creating tables and you have to pass
+def create_table(table_name,columns):
+    # table_name = "bala7"
+ 
+    # columns = [
+    #     # ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+    #     ("productname", "TEXT")
+    #     # ("price", "REAL"),
+    #     # ("description", "TEXT"),
+    #     # ("is_active", "BOOLEAN"),
+    #     # ("created_at", "DATETIME"),
+    # ]
+ 
+    # data_to_insert = [
+    #     {
+    #         "productname": "varun A"
+    #         # "price": 10.99,
+    #         # "description": "Product A description",
+    #         # "is_active": True,
+    #         # "created_at": "2024-10-29 17:00:00",
+    #     },
+    #     {
+    #         "productname": "Product B"
+    #         # "price": 20.00,
+    #         # "description": "Product B description",
+    #         # "is_active": False,
+    #         # "created_at": "2024-10-29 18:00:00",
+    #     },
+    # ]
+ 
+    # print("Taableeeeeeeeeeeeeeeeeeeeeee")
+    # print(table_name)
+    # print(columns)
+ 
+    try:
+        with connection.cursor() as cursor:
+                # 1. Check if the table exists
+                cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+                table_exists = cursor.fetchone() is not None
+ 
+                if not table_exists:
+                    
+                    create_table_sql = f"CREATE TABLE {table_name} ("
+                    for col_name, col_type in columns:
+                        create_table_sql += f"{col_name} {col_type},"
+                    create_table_sql = create_table_sql[:-1] + ")"
+                    # print(create_table_sql)
+                    with transaction.atomic(using='default'):  
+                        cursor.execute(create_table_sql)
+                    print(f"Table '{table_name}' created.")
+ 
+    except Exception as e:
+        print(f"Error creating table: {e}")
+        connection.rollback()
+        # return Response(f"Error creating/inserting data: {e}", status=500)
+ 
+ 
+def insert_data_from_dataframe(dataframe, table_name, database_name='default'):
+    try:
+        with connections[database_name].cursor() as cursor:
+            for index, row in dataframe.iterrows():
+                # Construct the INSERT INTO statement
+                column_names = ', '.join(dataframe.columns)
+                placeholders = ', '.join(['%s'] * len(dataframe.columns))
+                insert_sql = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders});"
+                print(insert_sql)
+                # Execute the INSERT statement with data from the row
+                cursor.execute(insert_sql, tuple(row))
+ 
+            # Commit the changes within a transaction
+            with transaction.atomic(using=database_name):
+                cursor.execute("COMMIT;")
+ 
+        print(f"Data inserted successfully into '{table_name}' in {database_name} database.")
+       
+ 
+    except Exception as e:
+        print(f"Error inserting data: {e}")
+ 
+ 
+@api_view(['GET'])
+def viewDynamic(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [row[0] for row in cursor.fetchall()]  # Extract table names
+            return Response(tables)
+ 
+ 
+        #     table_name = "bala7"
+        #     cursor.execute(f"SELECT * FROM {table_name}")
+        #     rows = cursor.fetchall()
+ 
+        # # Print the data (or process it as needed)
+        # ans = []
+        # for row in rows:
+        #     ans.append(row)
+        # return Response(ans)
+ 
+ 
+ 
+            # table_name = "bala5"
+            #   # Method 1: Using PRAGMA table_info (recommended)
+            # cursor.execute(f"PRAGMA table_info({table_name});")
+            # columns_info = cursor.fetchall()
+            # for column in columns_info:
+            #     print(column)  # Print all column details
+            #     print(f"Column Name: {column[1]}")
+            # return Response("Hello")
+ 
+    except Exception as e:
+        print(f"Error creating/checking table: {e}")  # Print the error to the console
+        connection.rollback()  # Rollback any partial changes on error
+        return Response(f"Error creating/checking table: {e}", status=500)
+   
+ 
+ 
+def deleteSqlLiteTable(table_name):
+ 
+    # table_name = "demo"
+ 
+    try:
+            with connection.cursor() as cursor:
+                # Use parameterized query to prevent SQL injection
+                cursor.execute(f"DROP TABLE IF EXISTS  {table_name}") # Correct: parameterized query
+                # or cursor.execute(f"DROP TABLE IF EXISTS {table_name}") # Less secure way
+                print(f"Table '{table_name}' dropped (IF EXISTS).")
+    except Exception as e:
+            print(f"Error dropping table '{table_name}': {e}")
+   
+ 
+ 
+   
+ 
+    return Response("Hii")
+ 
+    # columns = [
+    #     ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+    #     ("productname", "TEXT")
+    #     ("price", "REAL"),
+    #     ("description", "TEXT"),
+    #     ("is_active", "BOOLEAN"),
+    #     ("created_at", "DATETIME"),
+    # ]
+ 
+    # table_name = "bala8"
+ 
+    # create_table(columns,table_name)
+ 
+    # data_to_insert =
+    # [
+    #     {
+    #         "productname": "varun A"
+    #         "price": 10.99,
+    #         "description": "Product A description",
+    #         "is_active": True,
+    #         "created_at": "2024-10-29 17:00:00",
+    #     },
+    #     {
+    #         "productname": "Product B"
+    #         "price": 20.00,
+    #         "description": "Product B description",
+    #         "is_active": False,
+    #         "created_at": "2024-10-29 18:00:00",
+    #     }
+    # ]
+ 
+ 
+def TableName_Modification(text):
+ 
+    allowed_chars = string.ascii_letters + string.digits + ' '  # Add space if needed
+ 
+    # Filter out characters not in the allowed set
+    cleaned_text = ''.join(char for char in text if char in allowed_chars)
+   
+    return re.sub(r'\s+', '_', cleaned_text)
+ 
+ 
+ 
+# @api_view(['POST'])
+def sheet_get(df,sheet_data,obj_id):
+ 
+    # deleteSqlLiteTable()
+ 
+   
+    project_id = sheet_data['project_id']
+    obj_name = sheet_data['obj_name']
+    template_name  = sheet_data['template_name']
+ 
+    # sheet = "Field List"
+    # df1 = pd.read_excel(r"C:\Users\varunbalaji.gada\Downloads\excel_dmc.xls",engine="xlrd", sheet_name=sheet)
+    # template_name=df1.columns[0]
+    # print(template_name)
+ 
+    # sheet = "Field List"
+    # df = pd.read_excel(r"C:\Users\varunbalaji.gada\Downloads\excel_dmc.xls",engine="xlrd", sheet_name=sheet,skiprows=[0,1,2],na_filter=False)
+    # print(df)
+ 
+    # obj_save = {
+    #     "project_id" : project_id,
+    #     "obj_name" : obj_name,
+    #     "template_name" : template_name
+    # }
+    # obj = ObjectSerializer(data=obj_save)
+    # if obj.is_valid():
+    #     obj_instance = obj.save()
+    #     obj_id = obj_instance.obj_id
+    #     # return Response(obj_id)
+    # else:
+    #     print("Error at Object saving")
+    #     return "Error at Object saving"
+ 
+    x=0
+    columns = []
+    # segment = "Additional Descriptions"
+    group = ""
+    customers_to_create=[]
+    field_data = []
+    for ind,i in df.iterrows():
+        col = []
+        data = []
+        # print(i['Sheet Name'] , " : " , i['Sheet Name']!="" and i['Sheet Name'] == segment)
+        if i['Sheet Name']=="":
+ 
+            if i['SAP Field'] !="":
+                col.append(i['SAP Field'])
+                data.append(i['SAP Field'])
+                if i['Type'].lower() == 'text':
+                    col.append("TEXT")
+                elif i['Type'].lower() == 'Number':
+                    col.append("INTEGER")
+                elif i['Type'].lower() == 'date':
+                    col.append("DATE")
+                elif i['Type'].lower() == 'boolean':
+                    col.append("BOOLEAN")
+                elif i['Type'].lower() == 'datetime':
+                    col.append("DATETIME")
+                else:
+                    col.append("TEXT")
+                columns.append(col)
+                data.append(i['Field Description'])
+                if i['Importance'] != "":
+                    data.append("True")
+                else:
+                    data.append("False")
+                field_data.append(data)
+        else:
+            # print("Columns varun : ",len(columns))
+            if len(columns) == 0:
+                seg_name =TableName_Modification(i['Sheet Name'])
+                tab ="t"+"_"+project_id+"_"+str(obj_name)+"_"+str(seg_name)
+                safe_table_name = "".join(c if c.isalnum() else "_" for c in tab) # Replace invalid chars with _
+                safe_table_name = safe_table_name[:128] # Limit length (SQLite has limits)
+                tab=safe_table_name
+                seg = i['Sheet Name']
+                seg_obj = {
+                    "project_id" : project_id,
+                    "obj_id" : obj_id,
+                    "segement_name":seg,
+                    "table_name" : tab
+                }
+                seg_instance = SegementSerializer(data=seg_obj)
+                if seg_instance.is_valid():
+                    seg_id_get = seg_instance.save()
+                    segment_id = seg_id_get.segment_id
+ 
+                else:
+                    return Response("Error at first segement creation")
+            if len(columns) != 0:
+                   
+ 
+                create_table(tab,columns)
+               
+ 
+                for d in field_data:
+                    field_obj = {
+                        "project_id" : project_id,
+                        "obj_id" : obj_id,
+                        "segement_id" : segment_id,
+                        "fields" : d[0],
+                        "description" : d[1],
+                        "isMandatory" : d[2]
+                    }
+                    field_instance = FieldSerializer(data=field_obj)
+                    if field_instance.is_valid():
+                        field_id_get = field_instance.save()
+                        field_id = field_id_get.field_id
+                    else:
+                        return Response("Error at Field Creation")
+ 
+ 
+                seg = i['Sheet Name']
+                seg_name = TableName_Modification(i['Sheet Name'])
+                tab ="t"+"_"+project_id+"_"+str(obj_name)+"_"+str(seg_name)
+                safe_table_name = "".join(c if c.isalnum() else "_" for c in tab) # Replace invalid chars with _
+                safe_table_name = safe_table_name[:128] # Limit length (SQLite has limits)
+                tab=safe_table_name
+                seg_obj = {
+                    "project_id" : project_id,
+                    "obj_id" : obj_id,
+                    "segement_name":seg,
+                    "table_name" : tab
+                }
+                # break
+                seg_instance = SegementSerializer(data=seg_obj)
+                if seg_instance.is_valid():
+                    seg_id_get = seg_instance.save()
+                    segment_id = seg_id_get.segment_id
+ 
+                   
+                else:
+                    return Response("Error at segement creation")
+                columns=[]
+                field_data=[]
+    create_table(tab,columns)
+    for d in field_data:
+        field_obj = {
+            "project_id" : project_id,
+            "obj_id" : obj_id,
+            "segement_id" : segment_id,
+            "fields" : d[0],
+            "description" : d[1],
+            "isMandatory" : d[2]
+        }
+        field_instance = FieldSerializer(data=field_obj)
+        if field_instance.is_valid():
+            field_id_get = field_instance.save()
+            field_id = field_id_get.field_id
+        else:
+            return Response("Error at Field Creation")
+ 
+    # return Response("Hello sheet")
+ 
+ 
+@api_view(['GET'])
+def project_dataObject(request,pid):
+ 
+    connections = objects.objects.filter(project_id=pid)
+    if connections:
+        serializer = ObjectSerializer(connections,many=True)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+   
+ 
+@api_view(['GET'])
+def DataObject_Segements(request,pid,oid):
+ 
+    connections = segments.objects.filter(project_id=pid,obj_id=oid)
+    if connections:
+        serializer = SegementSerializer(connections,many=True)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+   
+ 
+ 
+@api_view(['GET'])
+def Segements_Fields(request,pid,oid,sid):
+ 
+    connections = fields.objects.filter(project_id=pid,obj_id=oid,segement_id=sid)
+    if connections:
+        serializer = FieldSerializer(connections,many=True)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+ 
+ 
+ 
+@api_view(['POST'])
+def objects_create(request):
+    print("Hello called Objects Post")
+    file = request.FILES['file']
+    obj_name = request.data['obj_name']
+    project_id = request.data['project_id']
+    template_name = request.data['template_name']
+ 
+    obj_data = {
+        "obj_name" : obj_name,
+        "project_id" : project_id,
+        "template_name" : template_name
+    }
+ 
+    print("Heloooooooooooooo")
+    obj = ObjectSerializer(data=obj_data)
+ 
+   
+    if objects.objects.filter(project_id=obj_data['project_id'],obj_name = obj_data['obj_name']):
+        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+ 
+    if obj.is_valid():
+        obj_instance=obj.save()
+        objid = obj_instance.obj_id
+ 
+        df = pd.read_excel(file,sheet_name="Field List",skiprows=[0,1,2],na_filter=False)
+        print(df)
+        sheet_get(df,obj_data,objid)
+ 
+ 
+        return Response(obj.data)
+    else:
+        return Response(status=status.HTTP_409_CONFLICT)
+ 
+    return Response("Hello")
+ 
+ 
+@api_view(['PUT'])
+def objects_update(request,oid):
+ 
+    print("Hello called objects update")
+    # print(request.data)
+   
+ 
+ 
+    if objects.objects.filter(obj_id=oid).exists():
+        obj = objects.objects.get(obj_id=oid)
+ 
+        file = request.FILES['file']
+        obj_name = request.data['obj_name']
+        project_id = request.data['project_id']
+        template_name = request.data['file_name']
+    
+        obj_data = {
+            "obj_id" : oid,
+            "obj_name" : obj_name,
+            "project_id" : project_id,
+            "template_name" : template_name
+        }
+        print("Hiiiii : ",project_id)
+        print("Hello : ",obj_data)
+
+        if obj:
+           
+            #Deleting existing segements and tables
+            seg = segments.objects.filter(project_id=obj.project_id,obj_id=oid)
+            for s in seg:
+                deleteSqlLiteTable(s.table_name)
+                segSerializer = SegementSerializer(s)
+                s.delete()
+ 
+ 
+            #Creating new excel tables and details into segements and fields tables
+            data = ObjectSerializer(instance=obj, data=obj_data)
+            print(data)
+            if data.is_valid():
+                obj_instance=data.save()
+                objid = obj_instance.obj_id
+ 
+                df = pd.read_excel(file,sheet_name="Field List",skiprows=[0,1,2],na_filter=False)
+                # print(df)
+                sheet_get(df,obj_data,objid)
+ 
+                return Response(data.data)
+            else:
+                print(data.error_messages)
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+ 
+ 
+ 
+                # return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+        else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+ 
+ 
+@api_view(['DELETE'])
+def objects_delete(request,oid):
+    print("Hello called object Delete")
+    if objects.objects.filter(obj_id=oid).exists():
+        obj = objects.objects.get(obj_id=oid)
+        if obj:
+ 
+            seg = segments.objects.filter(project_id=obj.project_id,obj_id=oid)
+            for s in seg:
+                deleteSqlLiteTable(s.table_name)
+            serializer = ObjectSerializer(obj)
+            obj.delete()
+            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+ 
+ 
+@api_view(['GET'])
+def objects_get(request,oid):
+    print("Hello called object Get Api")
+    obj = objects.objects.get(obj_id=oid)
+    if obj:
+        serializer = ObjectSerializer(obj)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+ 
+@api_view(['POST'])
+def xls_read(request):
+    file = request.FILES['file']
+    excel_file = pd.ExcelFile(file)
+    # Get the sheet names
+    sheet_names = excel_file.sheet_names
+    # Print the sheet names
+    # print(len(sheet_names))
+    if len(sheet_names) <= 1 :
+        return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    else:
+        if 'Field List' in sheet_names:
+            # print("Yes Iam in ...")
+            df = pd.read_excel(file, sheet_name='Field List')
+           
+            val = df.columns[0].split(':')
+            return Response(val[1])
+        else:
+            return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+ 
+ 
+@api_view(['GET'])
+def tableDelete(request):
+ 
+    # lst = ['demo0','demo138','demo143','demo154','demo171','demo177','demo185','demo193','demo201'
+    #        ,'demo206','demo218','demo227','demo278','demo290','demo312','demo321','demo496','demo490'
+    #        ,'demo496','demo521','demo553','demo561','demo618','demo644','demo656','demo698']
+   
+    # for l in lst:
+    deleteSqlLiteTable('demo469')
+    return Response("Hello Deleted")
