@@ -18,6 +18,7 @@ import { getProjectsSlice } from './components/features/Project/projectSlice';
 import CreateBussinessRules from './components/pages/Bussiness Rules/createBussinessRules';
 import ManageBussinessRules from './components/pages/Bussiness Rules/manageBussinessRules';
 import MyWorkSpace from './components/pages/WorkSpace/MyWorkSpace';
+import SampleForm from './components/pages/SampleForm';
 
 
 function App() {

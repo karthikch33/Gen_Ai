@@ -49,7 +49,7 @@ const CreateProject = () => {
 
 
   return (
-    <>
+    <div className='p-2 m-3'>
     <ToastContainer
                   position='top-center'
                   autoClose={1000}
@@ -85,7 +85,8 @@ const CreateProject = () => {
                         className='form-control' 
                         name="project_name"  
                         value={formik.values.project_name}  
-                        onChange={formik.handleChange('project_name')}  
+                        onChange={formik.handleChange}  
+                        onBlur={formik.handleBlur}
                     />  
                     </div>
                     </div>    
@@ -127,7 +128,7 @@ const CreateProject = () => {
                 </div>                       
          </Form>  
 </div>  
-</>
+</div>
   )
 }
 

@@ -232,7 +232,7 @@ const ManageProjects = () => {
     ));  
 
     return (  
-        <>  
+        <div className='p-2 m-2'>  
         <ToastContainer
                   position='top-center'
                   autoClose={1000}
@@ -322,7 +322,7 @@ const ManageProjects = () => {
                 >  
                 </Modal>  
             </div>  
-        </>  
+        </div>  
     );  
 };  
 

@@ -231,8 +231,9 @@ const ErpForm = () => {
                             className='form-control' 
                             name="connection_name"  
                             value={formik.values.connection_name}  
-                            onChange={formik.handleChange('connection_name')}  
-                            disabled={getConnectionName !== null}   
+                            onChange={formik.handleChange}  
+                            disabled={getConnectionName !== null}
+                            onBlur={formik.handleBlur}   
                         />  
                         </div>
                         </div>    
@@ -254,7 +255,8 @@ const ErpForm = () => {
                                 className='form-control' 
                                 name="host"  
                                 value={formik.values.host}  
-                                onChange={formik.handleChange('host')}  
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}  
                             />  
                             </div>
                         </div>  
@@ -276,7 +278,8 @@ const ErpForm = () => {
                             className='form-control' 
                             name="sysnr"  
                             value={formik.values.sysnr}  
-                            onChange={formik.handleChange('sysnr')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                         />  
                         </div>
                     </div>
@@ -298,7 +301,8 @@ const ErpForm = () => {
                             name="client" 
                             className='form-control' 
                             value={formik.values.client}  
-                            onChange={formik.handleChange('client')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                         />  
                         </div>
                     </div>  
@@ -320,7 +324,8 @@ const ErpForm = () => {
                             name="username"  
                             className='form-control' 
                             value={formik.values.username}  
-                            onChange={formik.handleChange('username')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                         />  
                         </div>
                     </div> 
@@ -342,7 +347,8 @@ const ErpForm = () => {
                             className='form-control' 
                             name="password"  
                             value={formik.values.password}  
-                            onChange={formik.handleChange('password')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                         /> 
                         </div> 
                     </div>  

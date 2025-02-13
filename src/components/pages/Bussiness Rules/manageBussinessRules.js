@@ -92,9 +92,7 @@ const ManageBussinessRules = () => {
 
 
     const handleFileSelect = (e)=>{
-        if(e.target.value !== ""){
             setSelectOption(e);
-        }
     }
 
     const showModal = ()=>{
@@ -179,15 +177,14 @@ const ManageBussinessRules = () => {
         if (selectOption?.target?.value){  
             const selectedValue = Number(selectOption.target.value);  
             return item.project_id === selectedValue;  
-        } else {  
-            return true;
         }  
+            return true;
     });
 
 
   return (
     
-    <div>
+    <div className='p-2 m-2'>
          <ToastContainer
                     position='top-center'
                     autoClose={1000}
@@ -201,9 +198,7 @@ const ManageBussinessRules = () => {
                     theme='light'
                     />
                      {contextHolder}
-
-
-                     <div className="container-fluid">  
+                     <div className="container-fluid ">  
                         <div className="options_header" style={{ overflowX: "auto"}}>  
                     <label style={{ color: "skyblue", fontSize: "20px",marginRight:"10px" }}>Bussines Rules</label>  
                     <select  

@@ -165,7 +165,7 @@ const CreateBussinessRules = () => {
     return (  
         <Spin spinning={loading} tip="Uploading...">  
         {contextHolder}
-            <div>  
+            <div className='p-2 m-2'>  
                 <ToastContainer  
                     position='top-center'  
                     autoClose={1000}  

@@ -29,11 +29,6 @@ const FormFile = ({handleOk}) => {
             .required('Table Name Required')  
             .matches(/^(?!_)(?!.*_$)[a-zA-Z0-9_]+$/, 'Invalid Table Name'),   
         file_type: yup.string().required('File Type Selection Required'),  
-        // selected_sheet: yup.string().when('$fileType', {  
-        //     is: 'Excel',  
-        //     then: yup.string().required('Sheet selection is required'),  
-        //     otherwise: yup.string().notRequired(),  
-        // }),   
     });  
  
     const formik = useFormik({  
@@ -255,7 +250,8 @@ const FormFile = ({handleOk}) => {
                 className="form-control"  
                 value={formik.values.fileName}  
                 name="fileName"  
-                onChange={formik.handleChange('fileName')}  
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}  
             />  
             <div className="error" style={{overflowX:"auto"}}>{formik.touched.fileName && formik.errors.fileName}</div>  
         </div>  
@@ -268,8 +264,9 @@ const FormFile = ({handleOk}) => {
                 type="text"  
                 className="form-control"  
                 value={formik.values.tableName}  
-                name="table_name"  
-                onChange={formik.handleChange('tableName')}  
+                name="tableName"  
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}  
             />  
             <div className="error" style={{overflowX:"auto"}}>{formik.touched.tableName && formik.errors.tableName}</div>  
         </div>  
@@ -284,7 +281,8 @@ const FormFile = ({handleOk}) => {
                 value={formik.values.file_type}  
                 onChange={(e) => {  
                     setFileType(e.target.value);
-                    setFile('');  
+                    setFile('');
+                    setSheets([]);  
                     formik.values.uploaded_fileName = '';
                     formik.setFieldValue('file_type', e.target.value);  
                 }}  

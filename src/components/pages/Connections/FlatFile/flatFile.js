@@ -159,15 +159,12 @@ const FlatFile = () => {
         if (selectOption?.target?.value){  
             const selectedValue = Number(selectOption.target.value);  
             return item.project_id === selectedValue;  
-        } else {  
-            return false;
-        }  
+        } 
+        return true; 
     });
 
     const handleProjectSelect = (e)=>{
-        if(e.target.value !== ""){
             setSelectOption(e);
-        }
     }
  
     const createFile = () => {
@@ -194,7 +191,7 @@ const FlatFile = () => {
     }
    
     const hideModal = () => {  
-        setOpen(false);  
+        setOpen(false); 
     };
  
     const handleDelete = ()=>{
@@ -260,7 +257,7 @@ const FlatFile = () => {
  
     return (  
       <>
-        <div className="w-100">  
+        <div className="w-100 p-2 m-2">  
         {contextHolder}    
         <div className="container-fluid">  
             <div className="options_header" style={{ overflowX: "auto"}}>  

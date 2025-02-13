@@ -6,7 +6,7 @@ import { Row, Col } from 'react-bootstrap';
 
 const LandingPage = () => {  
   return (  
-    <Row className='LandingPage'>  
+    <Row className='LandingPage p-2 m-2'>  
     <Col xs={12} md={7}>  
       <Row>  
         {cardsData.map((card, index) => (  

@@ -144,19 +144,15 @@ const ViewConnection = () => {
         item?.connection_name.toLowerCase().includes(searchText.toLowerCase())
     ))
 
-    const filterSelectOptions = filteredData?.filter(item => {  
-        if (selectOption?.target?.value){  
-            const selectedValue = Number(selectOption.target.value);  
-            return item.project_id === selectedValue;  
-        } else {  
-            return false;
-        }  
-    });
+    const filterSelectOptions = filteredData?.filter(item =>{ 
+        if(selectOption?.target?.value){  
+            return item.project_id === Number(selectOption?.target?.value);  
+          } 
+          return true;
+});
     
     const handleProjectSelect = (e)=>{
-        if(e.target.value !== ""){
-            setSelectOption(e);
-        }
+        setSelectOption(e);
     }
         
     const handleEditNavigation = ()=>{
@@ -277,7 +273,7 @@ const ViewConnection = () => {
     }
 
     return (  
-        <div>  
+        <div className='p-2 m-2'>  
             <ToastContainer
                     position='top-center'
                     autoClose={1000}

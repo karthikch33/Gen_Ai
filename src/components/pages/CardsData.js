@@ -29,4 +29,10 @@ export const cardsData = [
       icon: 'fas fa-blog', 
       link:'/workspace'
     },
+    {
+      title: 'Uploads',
+      description: 'Upload Your Files',
+      icon: 'fas fa-upload', 
+      link:'/workspace'
+    },
   ];

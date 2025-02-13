@@ -179,7 +179,8 @@ const HanaForm = () => {
                             className='form-select'  
                             style={{ width: '100%'}}  
                             value={formik.values.project_id}  
-                            onChange={formik.handleChange('project_id')}  
+                            onChange={formik.handleChange}  
+                            onBlur={formik.handleBlur}
                             disabled={getConnectionName !== null}  
                         >  
                             <option value="">Select Project</option>    
@@ -210,7 +211,8 @@ const HanaForm = () => {
                             className='form-control' 
                             name="connection_name"  
                             value={formik.values.connection_name}  
-                            onChange={formik.handleChange('connection_name')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                             disabled={getConnectionName !== null}   
                         />  
                         </div>
@@ -233,7 +235,8 @@ const HanaForm = () => {
                             className='form-control' 
                             name="host"  
                             value={formik.values.host}  
-                            onChange={formik.handleChange('host')}  
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}  
                         />  
                         </div>
                     </div>  
@@ -256,7 +259,8 @@ const HanaForm = () => {
                             value={formik.values.port}  
                             name="port"  
                             className='form-control' 
-                            onChange={formik.handleChange}   
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}   
                         />   
                         </div>
                     </div>  
@@ -278,7 +282,8 @@ const HanaForm = () => {
                                 name="username"  
                                 className='form-control' 
                                 value={formik.values.username}  
-                                onChange={formik.handleChange('username')}  
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}  
                             />  
                             </div>
                         </div> 
@@ -300,7 +305,8 @@ const HanaForm = () => {
                                 className='form-control' 
                                 name="password"  
                                 value={formik.values.password}  
-                                onChange={formik.handleChange('password')}  
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}  
                             /> 
                             </div> 
                         </div>  
