@@ -42,4 +42,18 @@ urlpatterns = [
     path('xls/',views.xls_read,name="xls_read"),
     path('tableDelete/',views.tableDelete,name="tableDelete"),
     
+
+      # file CURD
+    path('api/fcreate/',views.fileCreate,name="fcreate"),
+    path('api/fupdate/<int:p_id>/<str:f_name>/', views.fileUpdate, name='fupdate'),
+    path('api/fget/',views.fileGet,name="fget"),
+    path('api/fdelete/<int:p_id>/<str:f_name>/',views.fileDelete,name="fdelete"),
+    path('api/fgetSingle/<int:p_id>/<str:f_name>/',views.fileGetSingle,name="fgetSingle"),
+    path('api/frename/<str:re_val>/<int:p_id>/<str:f_name>/',views.fileRename,name="frename"),
+ 
+    #file
+    path('excel/', views.GetXL.as_view(), name = "by"),
+    path('txt/', views.GetTXT.as_view(), name = "hi"),
+    path('csv/', views.GetFile.as_view(), name = "by"),
+    path('xlsx/', views.GetXLSheet.as_view(), name = "hlo"),
 ]

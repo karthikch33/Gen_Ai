@@ -14,6 +14,9 @@ from django.core.serializers import serialize
 import pandas as pd
 import re,string
 from django.db import connection
+from rest_framework.views import APIView
+from .serlializers import FileSerializer
+from .models import FileConnection
 
 
 
@@ -1094,17 +1097,18 @@ def objects_create(request):
     obj_name = request.data['obj_name']
     project_id = request.data['project_id']
     template_name = request.data['template_name']
+    ob_name = obj_name.strip()  
  
     obj_data = {
-        "obj_name" : obj_name,
+        "obj_name" : ob_name,
         "project_id" : project_id,
         "template_name" : template_name
     }
- 
+    print(obj_data)
     print("Heloooooooooooooo")
     obj = ObjectSerializer(data=obj_data)
  
-   
+    
     if objects.objects.filter(project_id=obj_data['project_id'],obj_name = obj_data['obj_name']):
         return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
  
@@ -1119,6 +1123,7 @@ def objects_create(request):
  
         return Response(obj.data)
     else:
+        print(obj.error_messages)
         return Response(status=status.HTTP_409_CONFLICT)
  
     return Response("Hello")
@@ -1128,62 +1133,60 @@ def objects_create(request):
 def objects_update(request,oid):
  
     print("Hello called objects update")
+    # return Response("Hello")
     # print(request.data)
    
  
+    file = request.FILES['file']
+    obj_name = request.data['obj_name']
+    project_id = request.data['project_id']
+    template_name = request.data['file_name']
+ 
+    obj_data = {
+        "obj_name" : obj_name,
+        "project_id" : project_id,
+        "template_name" : template_name
+    }
  
     if objects.objects.filter(obj_id=oid).exists():
         obj = objects.objects.get(obj_id=oid)
+        if obj.obj_name == obj_name:
  
-        file = request.FILES['file']
-        obj_name = request.data['obj_name']
-        project_id = request.data['project_id']
-        template_name = request.data['file_name']
-    
-        obj_data = {
-            "obj_id" : oid,
-            "obj_name" : obj_name,
-            "project_id" : project_id,
-            "template_name" : template_name
-        }
-        print("Hiiiii : ",project_id)
-        print("Hello : ",obj_data)
-
-        if obj:
-           
-            #Deleting existing segements and tables
-            seg = segments.objects.filter(project_id=obj.project_id,obj_id=oid)
-            for s in seg:
-                deleteSqlLiteTable(s.table_name)
-                segSerializer = SegementSerializer(s)
-                s.delete()
+            if obj:
+               
+                #Deleting existing segements and tables
+                seg = segments.objects.filter(project_id=obj.project_id,obj_id=oid)
+                for s in seg:
+                    deleteSqlLiteTable(s.table_name)
+                    # segSerializer = SegementSerializer(s)
+                    # s.delete()
  
  
-            #Creating new excel tables and details into segements and fields tables
-            data = ObjectSerializer(instance=obj, data=obj_data)
-            print(data)
-            if data.is_valid():
-                obj_instance=data.save()
-                objid = obj_instance.obj_id
+                #Creating new excel tables and details into segements and fields tables
+                data = ObjectSerializer(instance=obj, data=obj_data)
+                if data.is_valid():
+                    obj_instance=data.save()
+                    objid = obj_instance.obj_id
  
-                df = pd.read_excel(file,sheet_name="Field List",skiprows=[0,1,2],na_filter=False)
-                # print(df)
-                sheet_get(df,obj_data,objid)
+                    df = pd.read_excel(file,sheet_name="Field List",skiprows=[0,1,2],na_filter=False)
+                    # print(df)
+                    sheet_delete(df,obj_data,objid)
+                    sheet_update(df,obj_data,objid)
  
-                return Response(data.data)
+                    return Response(data.data)
+                else:
+                    return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
-                print(data.error_messages)
-                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+                return Response(status=status.HTTP_404_NOT_FOUND)
  
  
  
                 # return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
         else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
- 
- 
+  
 @api_view(['DELETE'])
 def objects_delete(request,oid):
     print("Hello called object Delete")
@@ -1244,3 +1247,663 @@ def tableDelete(request):
     # for l in lst:
     deleteSqlLiteTable('demo469')
     return Response("Hello Deleted")
+
+
+def insert_data_from_dataframe(dataframe, table_name, database_name='default'):
+    try:
+        with connections[database_name].cursor() as cursor:
+            for index, row in dataframe.iterrows():
+                # Construct the INSERT INTO statement
+                column_names = ', '.join(dataframe.columns)
+                placeholders = ', '.join(['%s'] * len(dataframe.columns))
+                insert_sql = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders});"
+ 
+                # Execute the INSERT statement with data from the row
+                cursor.execute(insert_sql, tuple(row))
+ 
+            # Commit the changes within a transaction
+            with transaction.atomic(using=database_name):
+                cursor.execute("COMMIT;")
+ 
+        print(f"Data inserted successfully into '{table_name}' in {database_name} database.")
+       
+ 
+    except Exception as e:
+        print(f"Error inserting data: {e}")
+ 
+def create_table_dynamically(table_name, fields, database_name='default'):
+    try:
+        with connections[database_name].cursor() as cursor:
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+            if cursor.fetchone():
+                print(f"Table '{table_name}' already exists in {database_name} database.")
+                return  
+            create_table_sql = f"CREATE TABLE {table_name} ("
+            for field_name, field_type in fields.items():
+                create_table_sql += f"{field_name} {field_type},"
+            create_table_sql = create_table_sql[:-1] + ");"
+            print(create_table_sql)
+            with transaction.atomic(using=database_name):  
+                cursor.execute(create_table_sql)
+                return 1
+            print(f"Table '{table_name}' created successfully in {database_name} database.")
+ 
+    except sqlite3.Error as e:
+        print(f"SQLite3 Error: {e}")
+    except Exception as e:
+        print(f"Error creating table: {e}")
+ 
+def convert_list_to_fields(field_list):
+    field_dict = {}
+    for field_name, field_type in field_list:
+        if field_type.lower() == 'text':
+            field_dict[field_name] = 'TEXT'
+        elif field_type.lower() == 'date':
+            field_dict[field_name] = 'DATE'
+        elif field_type.lower() == 'integer':
+            field_dict[field_name] = 'INTEGER'
+        elif field_type.lower() == 'real':
+            field_dict[field_name] = 'REAL'
+        elif field_type.lower() == 'boolean':
+            field_dict[field_name] = 'BOOLEAN'
+        elif field_type.lower() == 'datetime':
+            field_dict[field_name] = 'DATETIME'
+        else:
+            field_dict[field_name] = 'TEXT'  
+    return field_dict
+ 
+def drop_table_dynamically(table_name, database_name='default'):
+    try:
+        with connections[database_name].cursor() as cursor:
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+            if not cursor.fetchone():
+                print(f"Table '{table_name}' does not exist in {database_name} database.")
+                return
+ 
+            drop_table_sql = f"DROP TABLE {table_name};"
+ 
+            with transaction.atomic(using=database_name):
+                cursor.execute(drop_table_sql)
+                return 1
+ 
+            print(f"Table '{table_name}' dropped successfully from {database_name} database.")
+ 
+    except Exception as e:
+        print(f"Error dropping table: {e}")
+       
+@api_view(['POST'])
+def fileCreate(request):
+    # request.data['connection_type']=""
+    connection = FileSerializer(data=request.data)
+    print("Hello post file called")
+    if FileConnection.objects.filter(project_id=request.data["project_id"],fileName = request.data["fileName"]).exists():
+        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+    if connection.is_valid():
+       
+        connection.save()
+        return Response(connection.data,status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_409_CONFLICT)
+   
+@api_view(['GET'])
+def fileGet(request):
+    print("hii")
+    connections = FileConnection.objects.all()
+    serializer = FileSerializer(connections,many=True)
+    return Response(serializer.data)
+ 
+@api_view(['PUT'])
+def fileUpdate(request,p_id,f_name):
+    print(request.data)
+    print(p_id,f_name)
+    connection = FileConnection.objects.get(project_id=p_id,fileName=f_name)
+    data = FileSerializer(instance=connection, data=request.data)
+    if data.is_valid():
+        print("jfnjkjefkjfkjnrkj")
+        data.save()
+        return Response(data.data,status=status.HTTP_202_ACCEPTED)
+    else:
+        print("ffffffffffffffffffffffffffffffffffffff")
+        return Response(status=status.HTTP_404_NOT_FOUND)
+   
+@api_view(['DELETE'])
+def fileDelete(request,p_id,f_name):
+    if FileConnection.objects.filter(project_id=p_id,fileName=f_name).exists():
+        connection = FileConnection.objects.get(project_id=p_id,fileName=f_name)
+        if connection:
+            connection.delete()
+            print("ssssssuccesssss")
+            return Response(f_name,status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)  
+ 
+@api_view(['GET'])
+def fileGetSingle(request,p_id,f_name):
+    if FileConnection.objects.filter(project_id=p_id,fileName=f_name).exists():
+        connection = FileConnection.objects.get(project_id=p_id,fileName=f_name)
+        if connection:
+            serializer = FileSerializer(connection)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)  
+ 
+@api_view(['PUT'])
+def fileRename(request,re_val,p_id,f_name):
+    # print(request.data)
+    connection = FileConnection.objects.get(project_id=p_id,fileName=f_name)
+    request.data['fileName'] = re_val
+    d={}
+    d['project_id'] = request.data['project_id']
+    d['fileName'] = re_val
+    d['tableName'] = request.data['table_name']
+    d['fileType'] = request.data['file_type']
+    d['sheet'] = request.data['sheet']
+    data = FileSerializer(instance=connection, data=d)
+    print(data)
+    if data.is_valid():
+        try:
+            data.save()
+            return  Response(f_name,status=status.HTTP_200_OK)
+        except:
+            return Response(re_val,status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(re_val,status=status.HTTP_404_NOT_FOUND)
+ 
+ 
+ 
+ 
+class GetXL(APIView):
+    def post(self, request):
+        file = request.FILES['file']
+        excel_file = pd.ExcelFile(file)
+        # Get the sheet names
+        sheet_names = excel_file.sheet_names
+        # Print the sheet names
+        print(sheet_names)
+        # data = pd.read_excel(file)
+        # data = pd.DataFrame(data)
+        # column_names_list = data.columns.tolist()
+        d = []
+        for i in sheet_names:
+            d.append(i)
+        print(d)
+        return Response(d)
+ 
+class GetXLSheet(APIView):
+    def post(self, request):
+        data = request.data.copy()  # Create a mutable copy of request.data
+ 
+        # Ensure project_id is an integer
+        try:
+            project_id = data.get('projectID')
+        except (ValueError, TypeError):
+            return Response({"projectID": ["Must be a valid integer."]}, status=status.HTTP_400_BAD_REQUEST)
+ 
+        # Assign int value to project_id, where FileSerializer can get this field name
+        data['project_id'] = project_id
+        data['fileType'] = 'Excel'  # Set fileType directly in the data
+        print(data)
+        serializer = FileSerializer(data=data)
+ 
+        if not serializer.is_valid():
+            print(serializer.errors)  # Very important for debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
+        serializer.save()
+        print(request.data.get('sheet'))
+        df = pd.read_excel(data['file'], sheet_name = data['sheet'])
+        df = pd.DataFrame(df)
+        columns = list(df.columns)
+        feilds= {}
+        for i in columns:
+            feilds[i] = "TEXT"
+        tablename=request.data['tableName']
+        flag = drop_table_dynamically(str(tablename))
+        print(flag)
+        flag = create_table_dynamically(str(tablename),feilds,"default")
+        print(flag)
+        insert_data_from_dataframe(dataframe=df,table_name=tablename,database_name='default')
+        return Response()
+ 
+class GetTXT(APIView):
+    def post(self, request):
+        file = request.FILES['file']
+        delim = request.data.get('delimiter')
+        data = request.data.copy()
+        try:
+            project_id = data.get('projectID')
+        except (ValueError, TypeError):
+            return Response({"projectID": ["Must be a valid integer."]}, status=status.HTTP_400_BAD_REQUEST)
+ 
+        # Assign int value to project_id, where FileSerializer can get this field name
+        data['project_id'] = project_id
+        data['fileType'] = 'Text'  # Set fileType directly in the data
+        print(data)
+        serializer = FileSerializer(data=data)
+ 
+        if not serializer.is_valid():
+            print(serializer.errors)  # Very important for debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
+        serializer.save()
+        print(delim)
+        data = pd.read_table(file)
+        print(data)
+        # df = pd.read_excel(data['file'], sheet_name = data['sheet'])
+        df = pd.DataFrame(data)
+        columns = list(df.columns)
+        n, flag = len(columns), 0
+        for i in columns:
+            if ':' in i:
+                flag = 1
+                break
+        if flag:
+            columns = []
+            for i in range(n):
+                s = 'Column' + str(i)
+                columns.append(s)
+        print(columns)
+        feilds= {}
+        for i in columns:
+            feilds[i] = "TEXT"
+        tablename=request.data['tableName']
+        flag = drop_table_dynamically(str(tablename))
+        print(flag)
+        flag = create_table_dynamically(str(tablename),feilds,"default")
+        print(flag)
+        insert_data_from_dataframe(dataframe=df,table_name=tablename,database_name='default')
+        return Response()
+   
+class GetFile(APIView):
+    def post(self, request):
+        data = request.data.copy()  # Create a mutable copy of request.data
+ 
+        # Ensure project_id is an integer
+        try:
+            project_id = data.get('projectID')
+        except (ValueError, TypeError):
+            return Response({"projectID": ["Must be a valid integer."]}, status=status.HTTP_400_BAD_REQUEST)
+ 
+        # Assign int value to project_id, where FileSerializer can get this field name
+        data['project_id'] = project_id
+        data['fileType'] = 'CSV'  # Set fileType directly in the data
+        print(data)
+        serializer = FileSerializer(data=data)
+ 
+        if not serializer.is_valid():
+            print(serializer.errors)  # Very important for debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
+        serializer.save()
+        file = request.FILES['file']
+        data = pd.read_csv(file)
+        columns = list(data.columns)
+        print(*columns, sep = ', ')
+        data = pd.DataFrame(data)
+ 
+        df = pd.DataFrame(data)
+        columns = list(df.columns)
+        feilds= {}
+        for i in columns:
+            feilds[i] = "TEXT"
+        tablename=request.data['tableName']
+        flag = drop_table_dynamically(str(tablename))
+        print(flag)
+        flag = create_table_dynamically(str(tablename),feilds,"default")
+        print(flag)
+        insert_data_from_dataframe(dataframe=df,table_name=tablename,database_name='default')
+        return Response()
+ 
+
+
+def sheet_update(df,sheet_data,obj_id):
+    project_id = sheet_data['project_id']
+    obj_name = sheet_data['obj_name']
+    template_name  = sheet_data['template_name']
+ 
+    x=0
+    is_seg=0
+    columns = []
+    # segment = "Additional Descriptions"
+    group = ""
+    customers_to_create=[]
+    field_data = []
+    for ind,i in df.iterrows():
+        col = []
+        data = []
+        # print(i['Sheet Name'] , " : " , i['Sheet Name']!="" and i['Sheet Name'] == segment)
+        if i['Sheet Name']=="":
+ 
+            if i['SAP Field'] !="":
+                col.append(i['SAP Field'])
+                data.append(i['SAP Field'])
+                if i['Type'].lower() == 'text':
+                    col.append("TEXT")
+                elif i['Type'].lower() == 'Number':
+                    col.append("INTEGER")
+                elif i['Type'].lower() == 'date':
+                    col.append("DATE")
+                elif i['Type'].lower() == 'boolean':
+                    col.append("BOOLEAN")
+                elif i['Type'].lower() == 'datetime':
+                    col.append("DATETIME")
+                else:
+                    col.append("TEXT")
+                columns.append(col)
+                data.append(i['Field Description'])
+                if i['Importance'] != "":
+                    data.append("True")
+                else:
+                    data.append("False")
+                data.append(i['SAP Structure'])
+                field_data.append(data)
+        else:
+            # print("Columns varun : ",len(columns))
+            if len(columns) == 0:
+                seg_name =TableName_Modification(i['Sheet Name'])
+                tab ="t"+"_"+project_id+"_"+str(obj_name)+"_"+str(seg_name)
+                seg = i['Sheet Name']
+                seg_obj = {
+                    "project_id" : project_id,
+                    "obj_id" : obj_id,
+                    "segement_name":seg,
+                    "table_name" : tab
+                }
+                seg_instance = segments.objects.filter(project_id=project_id,obj_id=obj_id)
+                x=0
+                for s in seg_instance:
+                    if s.segement_name == seg:
+                        x=1
+                        is_seg=0
+                        break
+                if x==0:
+                    seg_instanc = SegementSerializer(data=seg_obj)
+                    if seg_instance.is_valid():
+                        seg_id_get = seg_instanc.save()
+                        segment_id = seg_id_get.segment_id
+                        is_seg=1
+                    else:
+                        return Response("Error at first segement creation")
+                else:
+                    segment_id = s.segment_id
+            if len(columns) != 0:
+                   
+ 
+                create_table(tab,columns)
+ 
+                field_names = []
+                for fie in columns:
+                    field_names.append(fie[0])
+               
+                fields_in_table = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+               
+                for v in fields_in_table:
+                    if v.fields in field_names:
+                        pass
+                    else:
+                        serlzr = FieldSerializer(v)
+                        v.delete()
+               
+ 
+                # if is_seg == 1:
+                for d in field_data:
+                    field_obj = {
+                        "project_id" : project_id,
+                        "obj_id" : obj_id,
+                        "segement_id" : segment_id,
+                        "sap_structure" : d[3],
+                        "fields" : d[0],
+                        "description" : d[1],
+                        "isMandatory" : d[2]
+                    }
+                    field_check = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+                    y=0
+                    for f in field_check:
+                        if f.fields == d[0]:
+                            y=1
+                            break
+                    if y==0:
+                        field_instance = FieldSerializer(data=field_obj)
+                        if field_instance.is_valid():
+                            field_id_get = field_instance.save()
+                            field_id = field_id_get.field_id
+                        else:
+                            return Response("Error at Field Creation")
+                    else:
+                        field_obj = {
+                            "field_id" : f.field_id,
+                            "project_id" : project_id,
+                            "obj_id" : obj_id,
+                            "segement_id" : segment_id,
+                            "sap_structure" : d[3],
+                            "fields" : d[0],
+                            "description" : d[1],
+                            "isMandatory" : d[2]
+                        }
+                        field = fields.objects.get(field_id=f.field_id)
+                        data = FieldSerializer(instance=field, data=field_obj)
+                        # print("Fields : ",field_obj)
+                        # print(data)
+                        if data.is_valid():
+                            # print("Valid field")
+                            # print(data)
+                            data.save()
+                        else:
+                            # print("Error : ",data.error_messages)
+                            return Response("Error at Field Creation")
+ 
+ 
+                field_inst = Rule.objects.filter(project_id=project_id,object_id=obj_id,segment_id=segment_id)
+                if field_inst:
+                    latest_version = Rule.objects.filter(
+                        project_id=project_id,  # Assuming all items have the same IDs
+                        object_id=obj_id,
+                        segment_id=segment_id
+                    ).order_by('-version_id').first()
+                    field_inst = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+                    for fi in field_inst:
+                        fields_tab = Rule.objects.filter(project_id=project_id,object_id=obj_id,segment_id=segment_id,version_id=latest_version.version_id,field_id=fi.field_id).first()
+                        if fields_tab:
+                            rule = {
+                                "project_id" : project_id,
+                                "object_id" : obj_id,
+                                "segment_id" : segment_id,
+                                "field_id" : fi.field_id,
+                                "version_id" : latest_version.version_id+1,
+                                "target_sap_table" : fi.sap_structure,
+                                "target_sap_field" : fi.fields,
+                                "source_table" : fields_tab.source_table,
+                                "source_field_name" : fields_tab.source_field_name,
+                                "data_mapping_rules": fields_tab.data_mapping_rules,
+                                "text_description" : fi.description
+                            }
+                            sezr = RuleSerializer(data=rule)
+                            if sezr.is_valid():
+                                sezr.save()
+                        else:
+                            rule = {
+                                "project_id" : project_id,
+                                "object_id" : obj_id,
+                                "segment_id" : segment_id,
+                                "field_id" : fi.field_id,
+                                "version_id" : latest_version.version_id+1,
+                                "target_sap_table" : fi.sap_structure,
+                                "target_sap_field" : fi.fields,
+                                "text_description" : fi.description
+                            }
+                            sezr = RuleSerializer(data=rule)
+                            if sezr.is_valid():
+                                sezr.save()      
+ 
+ 
+                seg = i['Sheet Name']
+                seg_name = TableName_Modification(i['Sheet Name'])
+                tab ="t"+"_"+project_id+"_"+str(obj_name)+"_"+str(seg_name)
+                seg_obj = {
+                    "project_id" : project_id,
+                    "obj_id" : obj_id,
+                    "segement_name":seg,
+                    "table_name" : tab
+                }
+                # break
+ 
+                seg_instance = segments.objects.filter(project_id=project_id,obj_id=obj_id)
+                x=0
+                for s in seg_instance:
+                    if s.segement_name == seg:
+                        x=1
+                        is_seg=0
+                        break
+                if x==0:
+                    seg_instanc = SegementSerializer(data=seg_obj)
+                    if seg_instanc.is_valid():
+                        seg_id_get = seg_instanc.save()
+                        segment_id = seg_id_get.segment_id
+                        is_seg=1
+ 
+                    else:
+                        return Response("Error at first segement creation")
+                else:
+                    segment_id = s.segment_id
+ 
+                columns=[]
+                field_data=[]
+    create_table(tab,columns)
+    # if is_seg==1:
+ 
+    field_names = []
+    for fie in columns:
+        field_names.append(fie[0])
+   
+    fields_in_table = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+   
+    for v in fields_in_table:
+        if v.fields in field_names:
+            pass
+        else:
+            serlzr = FieldSerializer(v)
+            v.delete()
+ 
+ 
+    for d in field_data:
+        field_obj = {
+            "project_id" : project_id,
+            "obj_id" : obj_id,
+            "segement_id" : segment_id,
+            "sap_structure" : d[3],
+            "fields" : d[0],
+            "description" : d[1],
+            "isMandatory" : d[2]
+        }
+        field_check = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+        y=0
+        for f in field_check:
+            if f.fields == d[0]:
+                y=1
+                break
+        if y==0:
+            field_instance = FieldSerializer(data=field_obj)
+            if field_instance.is_valid():
+                field_id_get = field_instance.save()
+                field_id = field_id_get.field_id
+            else:
+                return Response("Error at Field Creation")
+        else:
+            field_obj = {
+                            "field_id" : f.field_id,
+                            "project_id" : project_id,
+                            "obj_id" : obj_id,
+                            "segement_id" : segment_id,
+                            "sap_structure" : d[3],
+                            "fields" : d[0],
+                            "description" : d[1],
+                            "isMandatory" : d[2]
+                        }
+            field = fields.objects.get(field_id=f.field_id)
+            # print("Fields : ", field_obj)
+            data = FieldSerializer(instance=field, data=field_obj)
+            if data.is_valid():
+                # print("Valid data")
+                data.save()
+            else:
+                return Response("Error at Field Creation")
+    field_inst = Rule.objects.filter(project_id=project_id,object_id=obj_id,segment_id=segment_id)
+    if field_inst:
+        latest_version = Rule.objects.filter(
+            project_id=project_id,  # Assuming all items have the same IDs
+            object_id=obj_id,
+            segment_id=segment_id
+        ).order_by('-version_id').first()
+        field_inst = fields.objects.filter(project_id=project_id,obj_id=obj_id,segement_id=segment_id)
+        for fi in field_inst:
+            fields_tab = Rule.objects.filter(project_id=project_id,object_id=obj_id,segment_id=segment_id,version_id=latest_version.version_id,field_id=fi.field_id).first()
+            if fields_tab:
+                rule = {
+                    "project_id" : project_id,
+                    "object_id" : obj_id,
+                    "segment_id" : segment_id,
+                    "field_id" : fi.field_id,
+                    "version_id" : latest_version.version_id+1,
+                    "target_sap_table" : fi.sap_structure,
+                    "target_sap_field" : fi.fields,
+                    "source_table" : fields_tab.source_table,
+                    "source_field_name" : fields_tab.source_field_name,
+                    "data_mapping_rules": fields_tab.data_mapping_rules,
+                    "text_description" : fi.description
+                }
+                sezr = RuleSerializer(data=rule)
+                if sezr.is_valid():
+                    sezr.save()
+            else:
+                rule = {
+                    "project_id" : project_id,
+                    "object_id" : obj_id,
+                    "segment_id" : segment_id,
+                    "field_id" : fi.field_id,
+                    "version_id" : latest_version.version_id+1,
+                    "target_sap_table" : fi.sap_structure,
+                    "target_sap_field" : fi.fields,
+                    "text_description" : fi.description
+                }
+                sezr = RuleSerializer(data=rule)
+                if sezr.is_valid():
+                    sezr.save()      
+ 
+ 
+ 
+ 
+def sheet_delete(df,sheet_data,obj_id):
+ 
+ 
+    # deleteSqlLiteTable()
+   
+    project_id = sheet_data['project_id']
+    obj_name = sheet_data['obj_name']
+    template_name  = sheet_data['template_name']
+ 
+    x=0
+    is_seg=0
+    columns = []
+    # segment = "Additional Descriptions"
+    sheet_names = []
+    for ind,i in df.iterrows():
+        # print(i['Sheet Name'] , " : " , i['Sheet Name']!="" and i['Sheet Name'] == segment)
+        if i['Sheet Name']=="":
+            pass
+        else:
+            sheet_names.append(i['Sheet Name'])
+ 
+    print("Sheets : ",sheet_names)
+ 
+    segment_instance = segments.objects.filter(project_id=project_id,obj_id=obj_id)
+    for s in segment_instance:
+        if s.segement_name in sheet_names:
+            pass
+        else:
+            seg_delete = SegementSerializer(s)
+            s.delete()
+           

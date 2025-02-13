@@ -11,7 +11,8 @@ const ManageProjects = () => {
     const [open, setOpen] = useState(false);  
     const [open2, setOpen2] = useState(false);  
     const [selectedKey, setSelectedKey] = useState(null);  
-    const [selectedRecord, setSelectedRecord] = useState(null);  
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [alertActive,setAlertActive] = useState(true);  
     const dispatch = useDispatch();  
     const [messageApi, contextHolder] = message.useMessage();
     const projects = useSelector(state => state.project.projects);  
@@ -52,8 +53,14 @@ const ManageProjects = () => {
     };  
 
     const showModal = () => { 
-        if(selectedRecord === null) 
-        messageApi.info('Please Select a Project')
+        if(selectedRecord === null)
+            {
+                if(alertActive){
+                messageApi.info('Please Select a Project')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+            }
         else{
             formik.setValues({  
                 project_name: selectedRecord.project_name,  
@@ -93,9 +100,14 @@ const ManageProjects = () => {
     };  
 
     const showModal2 = ()=>{
-      if(selectedRecord === null){
-        messageApi.info("Please Select Project")
-      }
+        if(selectedRecord === null)
+            {
+                if(alertActive){
+                messageApi.info('Please Select a Project')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+            }
       else{
       setOpen2(true);
       }
@@ -234,16 +246,10 @@ const ManageProjects = () => {
                   theme='light'
                   />
         {contextHolder}    
-            <div className="w-100">  
+
+            <div className="container-fluid">  
             <div className="d-flex justify-content-end align-items-center mb-2">  
                 <div className="d-flex mx-4 gap-3">  
-                {/* style={{  
-                        backgroundColor: '#1890ff',  
-                        borderColor: '#1890ff',  
-                        color:"white",
-                        marginRight: '10px', 
-                        fontSize: '14px'  
-                    }}  */}
                     <Button onClick={showModal} className='primary' style={{  
                         fontSize: '14px'  
                     }} >  
@@ -265,6 +271,7 @@ const ManageProjects = () => {
                     columns={columns}  
                     dataSource={filteredData}  
                     pagination={{ pageSize: 10 }}  
+                    style={{overflowX:"auto"}}
                 />  
 
                 <Modal  

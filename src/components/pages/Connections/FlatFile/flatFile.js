@@ -1,323 +1,332 @@
 import React, { useEffect, useState } from 'react';  
-import { Input, Table, Button, Radio, message, Modal } from 'antd';  
+import { Input, Table, Button, Radio, message, Modal, Select } from 'antd';  
 import CustomModel from '../ViewConnections/CustomModel';  
-import { Link, useNavigate } from 'react-router-dom';  
+import { Link } from 'react-router-dom'; 
 import {useFormik} from 'formik'
 import * as yup from 'yup'
-// import File from './File'
-import axios from 'axios';
-import { toast,ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-// import { deleteFileSlice, getFileSlice, renameFileSlice } from '../../../features/Connections/fileSlice';
+import { deleteFileSlice, getFileSlice, renameFileSlice } from '../../../features/Connections/fileSlice';
 import FormFile from './FormFile';
-
+import { getProjectsSlice } from '../../../features/Project/projectSlice';
+ 
 const FlatFile = () => {  
-
+ 
     const [searchText, setSearchText] = useState('');  
     const [allProjects, setAllProjects] = useState([]);
     const [messageApi, contextHolder] = message.useMessage();
-    const [selectedKey, setSelectedKey] = useState(null); 
+    const [selectedKey, setSelectedKey] = useState(null);
+    const [selectOption,setSelectOption] = useState();
+    const [alertActive,setAlertActive] = useState(true);
     const [selectedRecord,setSelectedRecord] = useState(null);  
     const [open, setOpen] = useState(false);  
     const [open2, setOpen2] = useState(false);  
-    const [createFormOpen, setCreateFormOpen] = useState(false);
-    const navigate = useNavigate();
-
+    const [createf, setcreatef] = useState(false);
+    
+    
     const handleRadioChange = (record) => {  
-        setSelectedKey(record.id); 
+        setSelectedKey(record?.file_name);
         setSelectedRecord(record);
     };  
-    
-
+   
+ 
     const dispatch = useDispatch();
-    const {connections} = useSelector((state)=>state.connection)
-    const projects = useSelector(state => state.project.projects);
-
+    const {file_connections} = useSelector((state)=> state.file)
+   
+ 
+    const {projects} = useSelector(state => state.project);
+ 
     const schema = yup.object({
-        connection_name : yup.string().required("Connection Name Required")
+        file_name : yup  
+                .string()  
+                .required("File Name is required")  
+                .matches(  
+                    /^[a-zA-Z_.-]+$/,  
+                    'File name can only contain letters, underscores, periods, and hyphens.'  
+                )  
+                .trim()  
+                .notOneOf(['.', '', '_', '-'], 'File name cannot be just a dot, underscore, or hyphen.')  
+                .test('no-start-end-dot', 'File name cannot start or end with a dot.', (value) => {  
+                    return value && !(value.startsWith('.') || value.endsWith('.'));  
+                })  
+                .test('no-start-end-hyphen', 'File name cannot start or end with a hyphen.', (value) => {  
+                    return value && !(value.startsWith('-') || value.endsWith('-'));  
+                })  
+                .test('no-start-end-underscore', 'File name cannot start or end with an underscore.', (value) => {  
+                    return value && !(value.startsWith('_') || value.endsWith('_'));  
+                })  
+                .test('no-spaces', 'Spaces are not allowed in file name.', (value) => {  
+                    return value && !/\s/.test(value);  
+                }),
     })
-
-
+ 
+    useEffect(()=>{
+      dispatch(getProjectsSlice());
+    },[])
+ 
+   
     const formik = useFormik({
-        initialValues:{
-            connection_name:""
-        },
-        validationSchema:schema,
-        onSubmit:(values)=>{
-            console.log(values);
-        }
-    })
-
-    useEffect(() => { 
-        // dispatch(getFileSlice())   
+      initialValues:{
+          file_name:""
+      },
+      validationSchema:schema,
+      onSubmit : (values)=>{
+        handleRename();
+      }
+  })
+ 
+    useEffect(() => {
+        dispatch(getFileSlice())  
      }, []);
-
-      useEffect(()=>{
-         setAllProjects(projects);
-      },[projects])
-
-    const columns = [   
+ 
+    const columns = [  
         {  
             title: 'Select',  
             dataIndex: 'selecteditem',  
-            render: (text, record) => (  
-                <div style={{display:'flex',justifyContent:'center'}}>
+            render: (text, record) =>   {
+                return (<div style={{display:'flex',justifyContent:'center'}}>
                 <Radio  
-                    checked={selectedKey === record.id}  
-                    onChange={() => handleRadioChange(record)}   
+                    checked={selectedKey === record.file_name}  
+                    onChange={() => handleRadioChange(record)}  
                 />  
-                </div>
-            )  
+                </div>)
+            }
+             
         },  
         {  
             title: 'File Name',  
-            dataIndex: 'connection_name',  
-            key: 'connection_name',  
-            render: (text, record) => (
-                <Link to={''} className='text-center'>{record.connection_name}</Link>                  
-            )
+            dataIndex: 'file_name',  
+            key: 'file_name',  
         },  
         {  
             title: 'File Type',  
-            dataIndex: 'connection_type',  
-            key: 'connection_type',  
+            dataIndex: 'file_type',  
+            key: 'file_type',  
         },  
         {  
-            title: 'Sheet Name',  
-            dataIndex: 'username',  
-            key: 'username',  
+            title: 'Sheet',  
+            dataIndex: 'sheet',  
+            key: 'sheet',  
         },  
         {  
             title: 'Table Name',  
-            dataIndex: 'host',  
-            key: 'host',  
-        },  
-        {  
-            title: 'Connection Status',  
-            dataIndex: 'connection_status',  
-            key: 'connection_status',  
-            render: (status) => (
-                <div style={{ display: 'flex', alignItems: 'center', marginLeft:'18px' }}>  
-                    <span className={`circle ${status === "Active" ? 'green' : 'red'}`}></span>      
-                    <p className='mb-2 ml-2'>{status === "Active" ? 'Active' :'InActive'}</p>  
-                </div>  
-            ),   
-        } 
+            dataIndex: 'table_name',  
+            key: 'table_name',  
+            render: (text, record) => (
+              <Link to={''} className='text-center'>{record.table_name}</Link>                  
+          )
+        }
     ];  
-
+ 
+   
+    useEffect(()=>{
+      setAllProjects(projects);
+  },[projects])
+ 
     const conns = []
-
-    
-    Array.isArray(connections?.data) && connections?.data.forEach((field,i)=>{
+ 
+   
+    Array.isArray(file_connections?.data) && file_connections?.data.forEach((field,i)=>{
         conns.push({
          id: field.id,  
-        connection_type: field.connection_type,  
-        connection_name: field.connection_name,  
-        username: field.username,  
-        host: field.host,
-        project_id : field.project_id,  
-        connection_status: field.status  
+        file_type: field.fileType,  
+        file_name: field.fileName,  
+        table_name: field.tableName,  
+        sheet: field.sheet,
+        project_id : field.project_id
         })
     })
-
+ 
     const connectionsIterate =  conns?.map(field => ({  
         id: field.id,  
-        connection_type: field.connection_type,  
-        connection_name: field.connection_name,
-        // <a onClick={()=>{getTables(field)}} style={{textDecoration:'underline',color:'blue'}}>
-        // {field.connection_name}
-        // </a>,    
-        username: field.username,  
-        host: field.host,
-        project_id : field.project_id,  
-        connection_status: field.connection_status  
+        file_type: field.file_type,  
+        file_name: field.file_name, 
+        table_name: field.table_name,  
+        sheet: field.sheet,
+        project_id : field.project_id
     }));  
-    
-    
-    
+   
+   
+   
     // Filter data based on search text  
-    const filteredData = connectionsIterate?.filter(item => (  
-        item.connection_type.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.username.toLowerCase().includes(searchText.toLowerCase()) ||  
-        item.host.toLowerCase().includes(searchText.toLowerCase())  ||  
-        item?.connection_name.toLowerCase().includes(searchText.toLowerCase())   
+    const filteredData =  connectionsIterate?.filter(item => (  
+        item.file_name.toLowerCase().includes(searchText.toLowerCase() ) ||
+        item.file_type.toLowerCase().includes(searchText.toLowerCase() ) ||
+        item.table_name.toLowerCase().includes(searchText.toLowerCase() ) ||  
+        item.sheet.toLowerCase().includes(searchText.toLowerCase() )  
     ));  
 
+    const filterSelectOptions = filteredData?.filter(item => {  
+        if (selectOption?.target?.value){  
+            const selectedValue = Number(selectOption.target.value);  
+            return item.project_id === selectedValue;  
+        } else {  
+            return false;
+        }  
+    });
+
+    const handleProjectSelect = (e)=>{
+        if(e.target.value !== ""){
+            setSelectOption(e);
+        }
+    }
+ 
+    const createFile = () => {
+      setcreatef(true);
+    }
+ 
     const handleOk = () => {
-      // setModalText('The modal will be closed after two seconds');
-      setOpen(false);
+      setcreatef(false);
     }
-        
-    const handleEditNavigation = ()=>{
-        console.log(selectedRecord.connection_name)
-        selectedRecord === null ? messageApi.info('Please Select a Connection') : 
-        navigate(`/connections/${selectedRecord?.connection_type}/${selectedRecord.connection_name}/${selectedRecord?.project_id}`);
-    }   
-    
-    const showModal = ()=>{
-        selectedRecord === null ? messageApi.info('Please Select a Connection') : 
-        setOpen(true);
+       
+   
+   
+    const handleFileDelete = ()=>{
+        if(selectedRecord === null){
+            if(alertActive){
+                messageApi.info('Please Select a file')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+        }
+       else{
+           setOpen(true);
+       }
     }
-    
+   
     const hideModal = () => {  
         setOpen(false);  
-    }; 
-
-    const showCreateModal = ()=>{
-      setCreateFormOpen(true);
-    } 
-
-    const hideCreateModal = ()=>{
-      setCreateFormOpen(false);
-    }
-
+    };
+ 
     const handleDelete = ()=>{
-        // dispatch(deleteFileSlice(selectedRecord)) 
+        dispatch(deleteFileSlice(selectedRecord))
+        .then((response)=>{
+            if(response?.payload?.status === 200){
+                messageApi.success(`${response?.payload?.data} has been deleted`)
+                setSelectedRecord(null);
+            }
+            else{
+                messageApi.error(`${response?.payload?.data} deletion failed`)
+            }
+        })
+
         setTimeout(()=>{
-            // dispatch(getFileSlice())
+            dispatch(getFileSlice())
         },1000)
+
         hideModal(false);
     }  
-
-    
-    const showModal2 = () => {  
-        if(selectedRecord === null)
-        messageApi.info('Please Select a Record')
+ 
+   
+    const handleFileRename = () => {  
+        if(selectedRecord === null){
+            if(alertActive){
+                messageApi.info('Please Select a File')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
+        }
         else{
-        formik.values.connection_name = selectedRecord?.connection_name;
+        formik.values.file_name = selectedRecord?.file_name;
         setOpen2(true);
         }
     };  
-
-
+ 
+ 
     const hideModal2 = () => {  
         setOpen2(false);  
     };    
-
+ 
     const handleRename = ()=>{
-        console.log(formik.values.connection_name);
         const rename_data = {
-            re_val : formik.values.connection_name,
+            re_val : formik.values.file_name,
             ...selectedRecord
         }
-        // dispatch(renameFileSlice(rename_data));
+        dispatch(renameFileSlice(rename_data))
+        .then((response)=>{
+            if(response?.payload?.status === 200){
+                messageApi.success(`${response?.payload?.data} is renamed`)
+                setSelectedRecord(null);
+            }
+            else{
+                messageApi.error(`${formik.values.file_name} failed to rename`)
+            }
+        })
         setTimeout(()=>{
-            // dispatch(getFileSlice())
+            dispatch(getFileSlice())
         },1000)
         setSelectedKey('');
         hideModal2(false);
-    }   
-
-    const handleValidateConnection = ()=>{
-
-    }
-
-    const getTables = async (field)=>{
-        console.log(field);
-        if(field.connection_status==='Inactive'){
-            alert("Your Status is Inactive");
-        }  
-        else{
-            if(field.connection_type==='Erp'){
-                 navigate(`/connections/view-tables`);
-            }
-            else{
+    }  
  
-            navigate(`/connections/view-tables/${field.project_id}/${field.connection_name}`);
-        }
-    }
-    }
-
     return (  
       <>
-        {/* {createf === true && <File />} */}
         <div className="w-100">  
-        <ToastContainer
-                  position='top-center'
-                  autoClose={1000}
-                  hideProgressBar={true}
-                  closeOnClick
-                  newestOnTop={true}
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme='light'
-                  />
         {contextHolder}    
-
-    <div className="container-fluid">  
-                <div className="d-flex flex-row justify-content-around mb-3" style={{ overflowX: "auto", maxWidth: "100%" }}>  
-                    <label style={{ color: "skyblue", fontSize: "20px" }}>Files</label>  
+        <div className="container-fluid">  
+            <div className="options_header" style={{ overflowX: "auto"}}>  
+                    <label style={{ color: "skyblue", fontSize: "20px",marginRight:"10px" }}>Files</label>   
                     <select  
                         name="project_id"   
                         className='form-select'   
-                        style={{ maxWidth: "200px", padding: "3px" }}   
-                        onChange={''}   
+                        style={{ minWidth:"200px", maxWidth:"250px", padding: "3px", marginRight:"10px",maxHeight: "32px" }}   
+                        onChange={handleProjectSelect}   
                     >  
-                        <option value="" style={{ textAlign: "center" }}>Select Project</option>   
+                    <option value="" style={{ textAlign: "center" }}>Select Project</option>   
                         {allProjects && allProjects.map((option) => (  
                             <option key={option?.project_id} value={option?.project_id} style={{ textAlign: "center" }}>{option?.project_name}</option>  
                         ))}  
-                    </select>  
-                    <Button onClick={showCreateModal} style={{ fontSize: '14px' }}>
-                                Create
-                    </Button>
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={''} style={{ fontSize: '14px' }}>  
-                        Edit  
-                    </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={''} style={{ fontSize: '14px' }}>  
-                        Delete  
-                    </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={''} style={{ fontSize: '14px' }}>  
-                        Rename  
-                    </Button>  
-                    <input  
-                        placeholder="Search by Name, Type, Username, or Host"  
-                        value={searchText}  
-                        className='form-control form-control-addons'   
-                        style={{ maxWidth: "200px", padding: "2px" }}   
-                        onChange={(e) => setSearchText(e.target.value)}  
-                    />  
-                </div>  
-            </div>
+                    </select>
+                    <Button onClick={createFile} style={{ fontSize: '14px', marginRight:"10px" }}>
+                    Create
+                </Button>   
+                <Button onClick={handleFileDelete} style={{ fontSize: '14px', marginRight:"10px" }}>  
+                    Delete  
+                </Button>  
+                <Button onClick={handleFileRename} style={{ fontSize: '14px', marginRight:"10px" }}>  
+                    Rename  
+                </Button>  
+
+                <Input  
+                placeholder="Search by File Name, File Type, Table Name, or Sheet"  
+                value={searchText}  
+                onChange={(e) => setSearchText(e.target.value)}  
+                style={{ minWidth:"200px", maxWidth:"230px", marginRight:"10px" ,marginBottom:"1px",maxHeight: "32px"}}  
+                className="search-input"  
+                />  
+                </div>
+        </div>
 
             <Table  
                 columns={columns}  
-                dataSource={filteredData} // Use the filtered data  
+                dataSource={filterSelectOptions}
                 pagination={{  
                     pageSize: 10,  
-                }}  
+                }}
+                style={{overflowX:"auto"}}  
             />  
-
-              <Modal
-                open = {createFormOpen}
-                onCancel={hideCreateModal}
-                hideModal={hideCreateModal} 
-                footer = {null}
-                >
-                  <p><FormFile /></p>
-              </Modal>
-
-
+                        <Modal
+                              open = {createf}
+                              footer = {null}
+                              onCancel={handleOk}
+                              hideModal = {handleOk}
+                              >
+                                <p><FormFile handleOk={handleOk}/></p>
+                            </Modal>
+ 
             <CustomModel
-              title={<>Delete { selectedRecord?.connection_name !== undefined ?  <span style={{ color: "red",display:"inline" }}>"{` `} {selectedRecord?.connection_name}{` `} "</span>:''} {` `}Connection</>}
-              hideModal={hideModal} 
+              title={<>Delete { selectedRecord?.file_name !== undefined ?  <span style={{ color: "red",display:"inline" }}>"{` `} {selectedRecord?.file_name}{` `} "</span>:''} {` `}Connection</>}
+              hideModal={hideModal}
               open={open}
               performAction = {handleDelete}
               onCancel={hideModal}
               okText="OK"
               cancelText="CANCEL"
             />
-
-
-
-
-
+ 
             <Modal
-                title={<>Rename { selectedRecord?.connection_name !== undefined ?  <span style={{ color: "red",display:"inline" }}>"{` `} {selectedRecord?.connection_name}{` `} "</span>:''} {` `}Connection</>}
+                title={<>Rename { selectedRecord?.file_name !== undefined ?  <span style={{ color: "red",display:"inline" }}>"{` `} {selectedRecord?.file_name}{` `} "</span>:''} {` `}Connection</>}
                 open={open2}
-                onOk={handleRename}
+                footer={null}
                 onCancel={hideModal2}
                 hideModal={hideModal2}
                 okText="OK"
@@ -329,15 +338,19 @@ const FlatFile = () => {
                             type="text"  
                             className="form-control"
                             placeholder='Rename Here'
-                            name="connection_name"  
-                            value={formik.values.connection_name}
-                            onChange={formik.handleChange('connection_name')}  
+                            name="file_name"  
+                            value={formik.values.file_name}
+                            onChange={formik.handleChange('file_name')}  
                         />  
+                         <div className="error">{formik.touched.file_name && formik.errors.file_name}</div>  
+                         <div className="d-flex justify-content-end" style={{ marginTop: "10px" }}>  
+                    <button type="submit" className="btn btn-primary">OK</button>
+                    </div>
                     </form>  
             </Modal>
         </div>  
       </>
     );  
 }  
-
-export default FlatFile;
+ 
+export default FlatFile

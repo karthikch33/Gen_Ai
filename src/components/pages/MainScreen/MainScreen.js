@@ -62,29 +62,6 @@ const items = [
           key: '/connections/flatfile',  
           icon: <MdInsertDriveFile  className='fs-4' />,  
           label: 'Files',
-          children:[
-            {
-              key: '/connections/excel',  
-              icon: <SiCrehana  className='fs-4'/>,  
-              label: 'Excel',
-            },
-            {
-              key: '/connections/txt',  
-              icon: <SiCrehana  className='fs-4'/>,  
-              label: 'TXT',
-            },
-            {
-              key: '/connections/csv',  
-              icon: <SiCrehana  className='fs-4'/>,  
-              label: 'CSV',
-            },
-            {
-              key: '/connections/xml',  
-              icon: <SiCrehana  className='fs-4'/>,  
-              label: 'XML',
-            },
-            
-          ]
         },    
         {  
           key:'/database',
@@ -130,6 +107,11 @@ const items = [
      icon:<i className={'fas fa-blog'}></i>,  
     label: 'My WorkSpace',
     children:[
+      {  
+        key: '/workspace',  
+        icon: <BiSolidFileExport className='fs-4' />,  
+        label: 'WorkSpace'  
+      },  
       {  
         key: '/workspace/extractions',  
         icon: <BiSolidFileExport className='fs-4' />,  

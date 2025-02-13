@@ -6,3 +6,6 @@ admin.site.register(Connection)
 admin.site.register(objects)
 admin.site.register(segments)
 admin.site.register(fields)
+admin.site.register(SaveRule)
+admin.site.register(Rule)
+

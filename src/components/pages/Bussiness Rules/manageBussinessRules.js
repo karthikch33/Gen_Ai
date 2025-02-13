@@ -1,4 +1,4 @@
-import { Button, message, Radio, Table } from 'antd';
+import { Button, Input, message, Radio, Table } from 'antd';
 import { useFormik } from 'formik';
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
@@ -100,7 +100,7 @@ const ManageBussinessRules = () => {
     const showModal = ()=>{
         if(selectedRecord === null){
             if(alertActive){
-                messageApi.info('Please Select a Connection2')
+                messageApi.info('Please Select a File')
                 setAlertActive(false);
                 setTimeout(()=>setAlertActive(true),3000);
                 }
@@ -116,7 +116,11 @@ const ManageBussinessRules = () => {
             navigate(`/bussinessrules/create/${project_id}`);
         }
         else{
-            messageApi.info('Please Select a File');
+            if(alertActive){
+                messageApi.info('Please Select a Project')
+                setAlertActive(false);
+                setTimeout(()=>setAlertActive(true),3000);
+                }
         }
     }
 
@@ -200,12 +204,12 @@ const ManageBussinessRules = () => {
 
 
                      <div className="container-fluid">  
-                        <div className="d-flex flex-row justify-content-around mb-3" style={{ overflowX: "auto", maxWidth: "100%" }}>  
-                    <label style={{ color: "skyblue", fontSize: "20px" }}>Bussines Rules</label>  
+                        <div className="options_header" style={{ overflowX: "auto"}}>  
+                    <label style={{ color: "skyblue", fontSize: "20px",marginRight:"10px" }}>Bussines Rules</label>  
                     <select  
                         name="project_id"   
-                        className='form-select'   
-                        style={{ maxWidth: "200px", padding: "3px" }}   
+                        className='form-select'
+                        style={{minWidth:"200px", maxWidth: "200px", padding: "3px", marginRight:"10px",maxHeight: "32px" }}   
                         onChange={handleFileSelect}   
                     >  
                         <option value="" style={{ textAlign: "center" }}>Select Project</option>   
@@ -213,21 +217,21 @@ const ManageBussinessRules = () => {
                             <option key={option?.project_id} value={option?.project_id} style={{ textAlign: "center" }}>{option?.project_name}</option>  
                         ))}  
                     </select>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={handleCreateNavigation} style={{ fontSize: '14px' }}>  
+                    <Button onClick={handleCreateNavigation} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Create  
                     </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={handleEditNavigation} style={{ fontSize: '14px' }}>  
+                    <Button  onClick={handleEditNavigation} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         ReUpload  
                     </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={showModal} style={{ fontSize: '14px' }}>  
+                    <Button  onClick={showModal} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Delete  
                     </Button>   
                    
-                    <input  
+                    <Input  
                         placeholder="Search by Data Object, or Id"  
                         value={searchText}  
-                        className='form-control form-control-addons'   
-                        style={{ maxWidth: "200px", padding: "2px" }}   
+                        className='form-control'
+                        style={{ minWidth:"200px", maxWidth: "200px",maxWidth:"230px", padding: "2px",marginBottom:"1px",maxHeight: "32px" }}   
                         onChange={(e) => setSearchText(e.target.value)}  
                     />  
                 </div>  
@@ -240,6 +244,7 @@ const ManageBussinessRules = () => {
                 pagination={{  
                     pageSize: 10,  
                 }}  
+                style={{overflowX:"auto"}}
             />  
 
 

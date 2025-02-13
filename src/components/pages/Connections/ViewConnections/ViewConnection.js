@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';  
-import {  Table, Button, Radio, message, Modal, Input, Select } from 'antd';  
+import {  Table, Button, Radio, message, Modal, Input } from 'antd';  
 import CustomModel from './CustomModel';  
 import { Link, useNavigate } from 'react-router-dom';  
 import {useFormik} from 'formik'
 import * as yup from 'yup'
-import axios from 'axios';
 import { toast,ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteConnectionSlice, getConnectionSlice, renameConnectionSlice } from '../../../features/Connections/connectionSlice';
-import { Option } from 'antd/es/mentions';
-import Search from 'antd/es/transfer/search';
 
 const ViewConnection = () => {  
 
@@ -35,7 +32,8 @@ const ViewConnection = () => {
     const projects = useSelector(state => state.project.projects);
 
     const schema = yup.object({
-        connection_name : yup.string().required("Connection Name Required")
+        connection_name : yup.string().required('Connection Name Required')
+                           .matches(/^(?!_)(?!.*_$)[a-zA-Z0-9_]+$/, 'Invalid Connection Name'),
     })
 
 
@@ -46,7 +44,7 @@ const ViewConnection = () => {
         },
         validationSchema:schema,
         onSubmit:(values)=>{
-            console.log(values);
+            handleRename()
         }
     })
 
@@ -173,6 +171,8 @@ const ViewConnection = () => {
         else{
             navigate(`/connections/${selectedRecord?.connection_type}/${selectedRecord.connection_name}/${selectedRecord?.project_id}`);
         }
+        setSelectedKey('');
+        setSelectedRecord(null);
     }   
     
     const showModal = ()=>{
@@ -196,6 +196,8 @@ const ViewConnection = () => {
         dispatch(deleteConnectionSlice(selectedRecord))
         .then((response)=>{
             toast.success(`${response?.payload.data} has been deleted`);
+            setSelectedKey('');
+            setSelectedRecord('');
         })
         .catch((error)=>{
             toast.error("Deletion Failed");
@@ -203,8 +205,10 @@ const ViewConnection = () => {
             setTimeout(()=>{
                 dispatch(getConnectionSlice())
             },1000)
-            hideModal(false);
-        } 
+        hideModal(false);
+        setSelectedKey('');
+        setSelectedRecord('');
+    } 
     
     const showModal2 = () => {  
         if(selectedRecord === null){
@@ -226,21 +230,34 @@ const ViewConnection = () => {
     };    
 
     const handleRename = ()=>{
-        console.log(formik.values.connection_name);
         const rename_data = {
             re_val : formik.values.connection_name,
             ...selectedRecord
         }
-        dispatch(renameConnectionSlice(rename_data));
-        setTimeout(()=>{
-            dispatch(getConnectionSlice())
-        },1000)
+        dispatch(renameConnectionSlice(rename_data))
+        .then((response)=>{
+            if(response?.payload?.status === 404){
+                toast.info(`${response?.payload?.data} is Already Exists`);
+            }
+            else if(response?.payload?.status === 202){
+                toast.success(`${response?.payload?.data} Connection Renamed`);
+                setSelectedRecord('');
+                dispatch(getConnectionSlice())
+
+            }
+            else{
+                toast.error('Rename Failed');
+            }
+        })
         setSelectedKey('');
+        setSelectedRecord('');
         hideModal2(false);
     }   
 
     const handleValidateConnection = ()=>{
-
+        
+        // setSelectedKey('');
+        // setSelectedRecord('');
     }
 
     const getTables = async (field)=>{
@@ -275,12 +292,12 @@ const ViewConnection = () => {
                     />
                      {contextHolder}
             <div className="container-fluid">  
-                <div className="d-flex flex-row justify-content-around mb-3" style={{ overflowX: "auto", maxWidth: "100%" }}>  
-                    <label style={{ color: "skyblue", fontSize: "20px" }}>Connections</label>  
+                <div className="options_header" style={{ overflowX: "auto"}}>  
+                    <label style={{ color: "skyblue", fontSize: "20px",marginRight:"10px"  }}>Connections</label>  
                     <select  
                         name="project_id"   
                         className='form-select'   
-                        style={{ maxWidth: "200px", padding: "3px" }}   
+                        style={{ minWidth:"200px", maxWidth:"250px", padding: "3px", marginRight:"10px",maxHeight: "32px" }}   
                         onChange={handleProjectSelect}   
                     >  
                         <option value="" style={{ textAlign: "center" }}>Select Project</option>   
@@ -288,23 +305,23 @@ const ViewConnection = () => {
                             <option key={option?.project_id} value={option?.project_id} style={{ textAlign: "center" }}>{option?.project_name}</option>  
                         ))}  
                     </select>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={handleEditNavigation} style={{ fontSize: '14px' }}>  
+                    <Button onClick={handleEditNavigation} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Edit  
                     </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={showModal} style={{ fontSize: '14px' }}>  
+                    <Button  onClick={showModal} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Delete  
                     </Button>  
-                    <Button className="mb-2 mb-md-0 me-md-2" onClick={showModal2} style={{ fontSize: '14px' }}>  
+                    <Button onClick={showModal2} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Rename  
                     </Button>  
-                    <Button onClick={handleValidateConnection} style={{ fontSize: '14px' }}>  
+                    <Button onClick={handleValidateConnection} style={{ fontSize: '14px', marginRight:"10px" }}>  
                         Validate Connection  
                     </Button>  
-                    <input  
+                    <Input  
                         placeholder="Search by Name, Type, Username, or Host"  
                         value={searchText}  
-                        className='form-control form-control-addons'   
-                        style={{ maxWidth: "200px", padding: "2px" }}   
+                        className='search-input'   
+                        style={{ minWidth:"200px", maxWidth:"230px", marginRight:"10px",marginBottom:"1px",maxHeight: "32px"}}   
                         onChange={(e) => setSearchText(e.target.value)}  
                     />  
                 </div>  
@@ -317,6 +334,7 @@ const ViewConnection = () => {
                 pagination={{  
                     pageSize: 10,  
                 }}  
+                style={{overflowX:"auto"}}
             />  
 
 
@@ -337,18 +355,38 @@ const ViewConnection = () => {
                 onCancel={hideModal2}
                 hideModal={hideModal2}
                 okText="OK"
+                footer={null}
                 cancelText="CANCEL"
             >
                 <form onSubmit={formik.handleSubmit}>  
-                        <label htmlFor="">Rename</label>  
-                        <input  
-                            type="text"  
-                            className="form-control"
-                            placeholder='Rename Here'
+                    <div className="row mt-3 d-flex align-items-center" >  
+                        <label htmlFor="connection_name" className='col-4'>Rename</label> 
+                        <div className='col-8'>
+                        <Input
+                            type="text" 
+                            className='form-control' 
                             name="connection_name"  
-                            value={formik.values.connection_name}
+                            value={formik.values.connection_name}  
                             onChange={formik.handleChange('connection_name')}  
                         />  
+                        </div>
+                    </div>  
+
+                    <div className='row'>
+                        <label className='col-4'></label>
+                        <div className='col-8'>
+                        <div className="error" style={{overflowX:"auto"}}>
+                            {formik.touched.connection_name && formik.errors.connection_name}
+                        </div>  
+                        </div>
+                    </div>
+
+                    <div className='d-flex justify-content-end mt-2 gap-4'>  
+                    <Button type="primary" htmlType="submit">  
+                        OK
+                    </Button>  
+                    <Button onClick={hideModal2}>Cancel</Button>
+                    </div>   
                     </form>  
             </Modal>
         </div>  

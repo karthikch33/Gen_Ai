@@ -160,15 +160,6 @@ const connectionSlice = createSlice({
             state.isError = false;
             state.isSucess = true;
             state.isPending = false;
-            if(action?.payload?.status === 404){
-                toast.info(`${action?.payload?.data} is Already Exists`);
-            }
-            else if(action?.payload?.status === 202){
-                toast.success(`${action?.payload?.data} Connection Renamed`);
-            }
-            else{
-                toast.error('Rename Failed');
-            }
 
         }).addCase(renameConnectionSlice.rejected,(state)=>{
             state.isError = true;

@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux';
 import { getProjectsSlice } from './components/features/Project/projectSlice';
 import CreateBussinessRules from './components/pages/Bussiness Rules/createBussinessRules';
 import ManageBussinessRules from './components/pages/Bussiness Rules/manageBussinessRules';
+import MyWorkSpace from './components/pages/WorkSpace/MyWorkSpace';
 
 
 function App() {
@@ -51,9 +52,7 @@ function App() {
               <Route path='erp/:id/:project_id' element={<ErpForm/>}/>
               <Route path='oracle' element={<OracleForm/>}/>
               <Route path='oracle/:id/:project_id' element={<OracleForm/>}/>
-              <Route path='flatfile/excel' element={<FlatFile/>} />
-              <Route path='flatfile/txt' element={<FlatFile/>} />
-              <Route path='flatfile/csv' element={<FlatFile/>} />
+              <Route path='flatfile' element={<FlatFile/>} />
               <Route path='view-connections' element={<ViewConnection/>} />
               <Route path='view-tables' element={<ViewSapTables/>} />
               <Route path='view-tables/:id/:conn_name' element={<ViewHanaTables/>} />
@@ -61,6 +60,7 @@ function App() {
             
             {/* Workspace Routes*/}
             <Route path="/workspace" element={<MainScreen/>}>
+            <Route index element={<MyWorkSpace/>}/>
                 <Route path='extractions' element={''}/>
                 <Route path='cleanse' element={''}/>
                 <Route path='cleansedata' element={''}/>

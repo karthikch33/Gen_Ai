@@ -120,24 +120,79 @@ class fields(models.Model):
     def __str__ (self):
         return f"{self.field_id}{self.fields}"
    
- 
- 
- 
 class Rule(models.Model):
-    Rule_id = models.AutoField(primary_key=True)
-    version = models.IntegerField(null=False,blank=False,default=1)
-    Source_Table = models.CharField(max_length=255,blank=True, null=True)
-    Source_Field_Name = models.CharField(max_length=255,blank=True, null=True)
-    Data_Mapping_Rules = models.CharField(max_length=255,blank=True, null=True)
-    Target_SAP_Table = models.CharField(max_length=255,blank=True, null=True)
-    Target_SAP_Field = models.CharField(max_length=255,blank=True, null=True)
-    Text_Description = models.CharField(max_length=255,blank=True, null=True)
-    Lookup_Table = models.CharField(max_length=255,blank=True, null=True)
-    Look_Up_Required = models.BooleanField(default=False)
-    Last_Updated_By = models.CharField(max_length=255,blank=True, null=True)
-    Last_Updated_On = models.DateTimeField(auto_now_add=True)
-    Rule_Status = models.CharField(max_length=255,blank=True, null=True)
-    Check_Box = models.CharField(max_length=255,blank=True, null=True)
+    rule_no = models.AutoField(primary_key=True)
+    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
+    object_id = models.ForeignKey(objects, on_delete=models.CASCADE)
+    segment_id = models.ForeignKey(segments, on_delete=models.CASCADE)
+    field_id = models.ForeignKey(fields, on_delete=models.SET_DEFAULT , default=701)
+    version_id = models.IntegerField()
+    source_table = models.CharField(max_length=255,blank=True, null=True)
+    source_field_name = models.CharField(max_length=255,blank=True, null=True)
+    data_mapping_rules = models.CharField(max_length=500,blank=True, null=True)
+    target_sap_table = models.CharField(max_length=255,blank=True, null=True)
+    target_sap_field = models.CharField(max_length=255,blank=True, null=True)
+    text_description = models.TextField(blank=True, null=True)
+    lookup_table = models.CharField(max_length=255, blank=True, null=True)
+    # lookup_required = models.BooleanField(default=False,blank=True, null=True)
+    last_updated_by = models.CharField(max_length=255, blank=True, null=True)
+    last_updated_on = models.DateTimeField(auto_now=True)
+    rule_status = models.BooleanField(default=True)
+    check_box = models.BooleanField(default=False)
+    is_latest = models.BooleanField(default=False)
+   
+    def __str__(self):
+        return f"Rule No: {self.rule_no}"    
  
-    def __str__ (self):
-        return f"{self.Rule_id}"
+
+
+
+ 
+ 
+
+class SaveRule(models.Model):
+    rule_no = models.AutoField(primary_key=True)
+    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
+    object_id = models.ForeignKey(objects, on_delete=models.CASCADE)
+    segment_id = models.ForeignKey(segments, on_delete=models.CASCADE)
+    field_id = models.ForeignKey(fields,on_delete=models.DO_NOTHING)
+    source_table = models.CharField(max_length=255,blank=True, null=True)
+    source_field_name = models.CharField(max_length=255,blank=True, null=True)
+    data_mapping_rules = models.CharField(max_length=500,blank=True, null=True)
+    target_sap_table = models.CharField(max_length=255,blank=True, null=True)
+    target_sap_field = models.CharField(max_length=255,blank=True, null=True)
+    text_description = models.TextField(blank=True, null=True)
+    lookup_table = models.CharField(max_length=255, blank=True, null=True)
+    # lookup_required = models.BooleanField(default=False,blank=True, null=True)
+    last_updated_by = models.CharField(max_length=255, blank=True, null=True)
+    last_updated_on = models.DateTimeField(auto_now=True)
+    rule_status = models.BooleanField(default=True)
+    check_box = models.BooleanField(default=False)
+    is_latest = models.BooleanField(default=False)
+   
+    def __str__(self):
+        return f"Rule No: {self.rule_no}"
+ 
+
+ 
+
+
+
+
+
+class FileConnection(models.Model):
+    project_id = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='files'  # Helpful for reverse lookups
+    )
+    fileName = models.CharField(max_length=255, blank=True, null=True)
+    fileType = models.CharField(max_length=255, blank=True, null=True)
+    sheet = models.CharField(max_length=255, blank=True, null=True)
+    tableName = models.CharField(max_length=255, blank=True, null=True, unique=True)
+ 
+    class Meta:
+        unique_together = ('project_id', 'fileName')
+ 
+    def __str__(self):
+        return self.fileName  

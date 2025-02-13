@@ -10,17 +10,9 @@ import { useNavigate } from 'react-router-dom';
 
 const CreateProject = () => {
    const schema = yup.object().shape({  
-           project_name: yup.string().required("Project Name is required")
-           .matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Project name must start with a letter or underscore & can only contain letters, numbers, and underscores.')  
-           .trim()  
-           .notOneOf(['_', ''], 'Project name cannot be just an underscore or empty.')  
-           .test('no-start-end-underscore', 'Underscore cannot be at the start or end of project name.', (value) => {  
-               return value && !(value.startsWith('_') || value.endsWith('_'));  
-           })  
-           .test('no-spaces', 'Spaces are not allowed in project name.', (value) => {  
-               return value && !/\s/.test(value);  
-           }),  
-           description: yup.string().required("description is required"),  
+           project_name:yup.string().required('Project Name Required')
+                   .matches(/^(?!_)(?!.*_$)[a-zA-Z0-9_]+$/, 'Invalid Project Name'),
+           description: yup.string().required("Description is required"),  
        });  
 
     const dispatch = useDispatch();
@@ -71,12 +63,12 @@ const CreateProject = () => {
                   theme='light'
                   />
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>  
-    <Form  
+          <Form  
             layout="vertical"  
             onFinish={formik.handleSubmit}  
             style={{  
                 width: '400px',  
-                backgroundColor: '#f0f2f5',  
+                backgroundColor: '#f8f9fa',  
                 maxWidth: '400px',  
                 padding: '30px',  
                 borderRadius: '8px',  
@@ -85,53 +77,55 @@ const CreateProject = () => {
         >  
             <h4 style={{ textAlign: 'center', marginBottom: '20px' }}>Create Project</h4>  
 
-             <label>Project Name :</label> 
-                        <Form.Item  validateStatus={formik.errors.project_name ? "error" : ""} help={formik.errors.project_name}>  
-                            <Input  
-                                name="project_name"  
-                                placeholder="Enter Project Name"  
-                                value={formik.values.project_name}  
-                                onChange={formik.handleChange}  
-                            />  
-                        </Form.Item>  
-                        <label>Description :</label>
-                        <Form.Item>  
-                            <Input  
-                                name="description"  
-                                placeholder="Enter description"  
-                                value={formik.values.description}  
-                                onChange={formik.handleChange}  
-                            />  
-                            <div className="error">  
-                            {formik.touched.description && formik.errors.description}  
-                        </div>
-                        </Form.Item>  
-            
-            <Form.Item style={{ textAlign: 'center' }}>  
-                <Button  
-                    type="primary"  
-                    htmlType="submit"  
-                    style={{  
-                        backgroundColor: '#1890ff',  
-                        borderColor: '#1890ff',  
-                        marginRight: '10px',  
-                    }}  
-                >  
-                    Create  
-                </Button>  
-                <Button  
-                    danger  
-                    onClick={() => navigate('/project/manageprojects')}  
-                    style={{  
-                        backgroundColor: 'red',  
-                        borderColor: 'red',  
-                        color: 'white',  
-                    }}  
-                >  
-                    Cancel  
-                </Button>  
-            </Form.Item>  
-        </Form>  
+                 <div className="row mt-3 d-flex align-items-center" >  
+                    <label htmlFor="project_name" className='col-4'>Project Name</label> 
+                    <div className='col-8'>
+                    <Input
+                        type="text" 
+                        className='form-control' 
+                        name="project_name"  
+                        value={formik.values.project_name}  
+                        onChange={formik.handleChange('project_name')}  
+                    />  
+                    </div>
+                    </div>    
+
+                <div className='row'>
+                    <label className='col-4'></label>
+                    <div className='col-8'>
+                    <div className="error" style={{overflowX:"auto"}}>
+                        {formik.touched.project_name && formik.errors.project_name}
+                    </div>  
+                    </div>
+                </div>
+
+                 <div className="row mt-3 d-flex align-items-center" >  
+                    <label htmlFor="description" className='col-4'>Description</label> 
+                    <div className='col-8'>
+                    <Input
+                        type="text" 
+                        className='form-control' 
+                        name="description"  
+                        value={formik.values.description}  
+                        onChange={formik.handleChange('description')}  
+                    />  
+                    </div>
+                    </div>    
+
+                <div className='row'>
+                    <label className='col-4'></label>
+                    <div className='col-8'>
+                    <div className="error" style={{overflowX:"auto"}}>
+                        {formik.touched.description && formik.errors.description}
+                    </div>  
+                    </div>
+                </div>
+
+                <div className='d-flex justify-content-center mt-3 gap-4'>  
+                        <input type='submit' className='btn btn-primary' value={'Create'} />  
+                        <input type='button' className="btn btn-danger" onClick={() => navigate('/project/manageprojects')} value={'Cancel'} />  
+                </div>                       
+         </Form>  
 </div>  
 </>
   )

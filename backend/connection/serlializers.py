@@ -31,3 +31,12 @@ class FieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = fields
         fields = '__all__'
+
+class FileSerializer(serializers.ModelSerializer):
+    project_id = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(),  # Important: Specify the queryset
+    )
+ 
+    class Meta:
+        model = FileConnection
+        fields = ['project_id', 'fileName', 'fileType', 'sheet', 'tableName']
